@@ -14,11 +14,20 @@ public class Lexer {
     private HashSet<String> keywords;
 
     public Lexer(String filePath) throws IOException {
-	CharStream charStream = new CharStream(filePath);
+	this.charStream = new CharStream(filePath);
 	initKeywords();
     }
 
     public Token nextToken() {
+	if(isWhiteSpace()){
+	    skipWhiteSpace();
+	}
+	
+	if(isComment()){
+	    skipComment();
+	}
+	
+	
 
     }
 
@@ -34,6 +43,17 @@ public class Lexer {
     private boolean isIdentifier() {
 	char c = charStream.current();
 	return (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_');
+    }
+    
+    private boolean isWhiteSpace(){
+	char c = charStream.current();
+	return c==' ' || c =='\t' || c=='\n' || c=='\r';
+    }
+    
+    private void skipWhiteSpace(){
+	while(isWhiteSpace()){
+	    charStream.consume();
+	}
     }
     
     private void initKeywords(){
