@@ -29,36 +29,29 @@ public class TokenType {
     public static final int WHILE = 22;
     public static final int RETURN = 23;
 
-    public static final int LCURLY = 23; // '{'
-    public static final int RCURLY = 23; // '}'
-    public static final int LPAREN = 23; // '('
-    public static final int RPAREN = 23; // ')'
-    public static final int LBRACK = 23; // '['
-    public static final int RBRACK = 23; // ']'
-    public static final int DOT = 23; 
-    public static final int COMMA = 23; 
-    public static final int SEMI = 23; // ';'
-    public static final int PLUS = 23; // 
-    public static final int MINUS = 23; // 
-    public static final int STAR = 23; // '*'
-    public static final int DOT = 23; // '/' <==========
-    public static final int AND = 23; // '&' <===========
-    public static final int OR = 23; // '|' <===========
-    public static final int DOT = 23; // '/' <==========
-    public static final int AND = 23; // '&' <===========
-    public static final int OR = 23; // '|' <===========
-    public static final int AND = 23; // '&&' <===========
-    public static final int OR = 23; // '||' <===========
-    public static final int LT = 23; // '<' <===========
-    public static final int GT = 23; // '>' <===========
-    public static final int LE = 23; // '<=' <===========
-    public static final int GE = 23; // '>=' <===========
-    public static final int ASSIGN = ; // '=' <===========
-    public static final int EQUAL = ; // '==' <===========
-    public static final int NE = ; // '!=' <===========
-    public static final int NEG = ; // '~' <===========
+    public static final int LCURLY = 24; // '{'
+    public static final int RCURLY = 25; // '}'
+    public static final int LPAREN = 26; // '('
+    public static final int RPAREN = 27; // ')'
+    public static final int LBRACK = 28; // '['
+    public static final int RBRACK = 29; // ']'
+    public static final int DOT = 30; 
+    public static final int COMMA = 31; 
+    public static final int SEMI = 32; // ';'
+    public static final int PLUS = 33; // 
+    public static final int MINUS = 34; // 
+    public static final int STAR = 35; // '*'
+    public static final int DIV = 36; // '/' 
+    public static final int AND = 37; // '&' '&&'
+    public static final int OR = 38; // '|' '||'
+    public static final int LT = 39; // '<' 
+    public static final int GT = 40; // '>' 
+    public static final int LE = 41; // '<=' 
+    public static final int GE = 42; // '>=' 
+    public static final int ASSIGN = 43 ; // '=' 
+    public static final int EQUAL = 44; // '==' 
+    public static final int NE = 45; // '!=' 
+    public static final int NEG = 46; // '~' 
     
-    
-
 
 }
