@@ -1,4 +1,4 @@
-package frontEnd;
+package parser;
 
 public class TokenType {
     public static final int EOF = -1;

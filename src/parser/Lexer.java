@@ -1,4 +1,4 @@
-package frontEnd;
+package parser;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -8,7 +8,7 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import frontEnd.CharStream;
+import parser.CharStream;
 
 public class Lexer {
     private CharStream charStream;
