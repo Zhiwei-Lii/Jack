@@ -1,6 +1,12 @@
 package parser;
 
-import ast.AST;
+import java.util.ArrayList;
+import java.util.List;
+
+import ast.Class;
+import ast.ClassVarDec;
+import ast.Subroutine;
+import ast.Type;
 
 public class Parser {
     TokenStream tokenStream;
@@ -9,96 +15,110 @@ public class Parser {
 	this.tokenStream = tokenStream;
     }
 
-    public void parse() {
-	classDec();
+    public Class parse() {
+	return classDec();
     }
 
-    public AST getAST() {
-	return null;
-    }
+    private Class classDec() {
+	String className;
+	List<ClassVarDec> classVars = new ArrayList<ClassVarDec>();
+	List<Subroutine> subroutines = new ArrayList<Subroutine>();
 
-    private void classDec() {
 	match(TokenType.CLASS); System.out.println("<class>");
-	className();
+	className = className();
 	match(TokenType.LCURLY);
 	
 	while(isClassVarDec()){
-	    classVarDec();
+	    classVars.addAll(classVarDec());
 	}
 	
 	while(isSubroutineDec()){
-	    subroutineDec();
+	    subroutines.add(subroutineDec());
 	}
 
 	match(TokenType.RCURLY); System.out.println("</class>");
     }
     
-    private void className(){
-	IDENTIFIER();
+    private String className(){
+	return IDENTIFIER();
     }
     
-    private void IDENTIFIER() {
+    private String IDENTIFIER() {
 	if(!checkType(TokenType.IDENTIFIER)){
 	    throw new Error("parse error!");
 	}
 	
 	Token token = tokenStream.currentToken();
-	System.out.println(token.image());
 	tokenStream.consume();
+	return token.image();
     }
 
-    private void classVarDec() {
+    private List<ClassVarDec> classVarDec() {
+	List<ClassVarDec> classVarDecs = new ArrayList<ClassVarDec>();
+	boolean isStatic = false;
+	
 	System.out.println("<static-field>");
 	if(checkType(TokenType.STATIC)){
 	    match(TokenType.STATIC);
+	    isStatic = true;
 	}
 
 	if(checkType(TokenType.FIELD)){
 	    match(TokenType.FIELD);
+	    isStatic = false;
 	}
 	
-	type();
-	varName();
+	Type type = type();
+	String varName = varName();
+	classVarDecs.add(new ClassVarDec(isStatic, type, varName));
 	
 	while(checkType(TokenType.COMMA)){
 	    match(TokenType.COMMA);
-	    varName();
+	    varName = varName();
+	    classVarDecs.add(new ClassVarDec(isStatic, type, varName));
 	}
 	
 	match(TokenType.SEMI);
 	System.out.println("</static-field>");
+	
+	return classVarDecs;
     }
     
-    private void varName() {
-	IDENTIFIER();
+    private String varName() {
+	return IDENTIFIER();
     }
 
-    private void type(){
+    private Type type(){
 	System.out.println("<type>");
 	
 	if(checkType(TokenType.INT)){
 	    System.out.println("<int>");
 	    match(TokenType.INT);
+	    return new Type("int");
 	}
 
 	if(checkType(TokenType.CHAR)){
 	    System.out.println("<char>");
 	    match(TokenType.CHAR);
+	    return new Type("char");
 	}
 
 	if(checkType(TokenType.BOOLEAN)){
 	    System.out.println("<boolean>");
 	    match(TokenType.BOOLEAN);
+	    return new Type("boolean");
 	}
 	
 	if(checkType(TokenType.IDENTIFIER)){
-	    className();
+	    String typeName = className();
+	    return new Type(typeName);
 	}
 
 	System.out.println("</type>");
+	return null;
     }
 
-    private void subroutineDec(){
+    private Subroutine subroutineDec(){
 	System.out.println("<subroutine>");
 	
 	tokenStream.consume(); // consume "constructor|method|function"
