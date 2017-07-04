@@ -1,13 +1,10 @@
 package ast;
 
-public class ClassVarDec extends Node {
+public class ClassVarDec extends Variable {
     boolean isStatic;
-    Type type;
-    String varName;
     
     public ClassVarDec(boolean isStatic, Type type, String varName){
+	super(type, varName);
 	this.isStatic = isStatic;
-	this.type = type;
-	this.varName = varName;
     }
 }
