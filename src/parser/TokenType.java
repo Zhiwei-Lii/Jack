@@ -49,7 +49,7 @@ public class TokenType {
     public static final int LE = 41; // '<=' 
     public static final int GE = 42; // '>=' 
     public static final int ASSIGN = 43 ; // '=' 
-    public static final int EQUAL = 44; // '==' 
+    public static final int EQ = 44; // '==' 
     public static final int NE = 45; // '!=' 
     public static final int NEG = 46; // '~' 
     

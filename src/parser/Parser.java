@@ -3,14 +3,20 @@ package parser;
 import java.util.ArrayList;
 import java.util.List;
 
+import ast.BinaryExpression;
 import ast.Class;
 import ast.ClassVarDec;
+import ast.Expression;
+import ast.IfStatement;
+import ast.IntegerLiteral;
 import ast.Parameter;
 import ast.ReturnStatement;
 import ast.Statement;
+import ast.StringLiteral;
 import ast.Subroutine;
 import ast.Type;
 import ast.VarStatement;
+import ast.WhileStatement;
 import ast.LetStatement;
 
 public class Parser {
@@ -208,6 +214,55 @@ public class Parser {
 	return checkType(TokenType.LET) || checkType(TokenType.IF) || checkType(TokenType.WHILE) || checkType(TokenType.DO) || checkType(TokenType.RETURN) || checkType(TokenType.VAR);
     }
     
+    private Statement ifStatement(){
+	System.out.println("<if-statement>");
+	Expression expr;
+	List<Statement> ifStmts;
+	List<Statement> elseStmts;
+	
+	match(TokenType.IF);
+
+	match(TokenType.LPAREN);
+	expr = expression();
+	match(TokenType.RPAREN);
+	
+	match(TokenType.LCURLY);
+	ifStmts = statements();
+	match(TokenType.RCURLY);
+	
+	if(checkType(TokenType.ELSE)){
+	    match(TokenType.ELSE);
+
+	    match(TokenType.LCURLY);
+	    elseStmts = statements();
+	    match(TokenType.RCURLY);
+	}
+	
+	System.out.println("</if-statement>");
+	
+	return new IfStatement(expr, ifStmts, elseStmts);
+    }
+    
+    private Statement whileStatement(){
+	System.out.println("<while-statement>");
+	Expression expr;
+	List<Statement> stmts;
+
+	match(TokenType.WHILE);
+	
+	match(TokenType.LPAREN);
+	expr = expression();
+	match(TokenType.RPAREN);
+	
+	match(TokenType.LCURLY);
+	stmts = statements();
+	match(TokenType.RCURLY);
+
+	System.out.println("</while-statement>");
+	
+	return new WhileStatement(expr, stmts);
+    }
+    
     private Statement doStatement(){
 	System.out.println("<do-statement>");
 	SubroutineCall subroutineCall;
@@ -316,6 +371,12 @@ public class Parser {
     private boolean isType(){
 	return checkType(TokenType.INT) || checkType(TokenType.CHAR) || checkType(TokenType.BOOLEAN) || checkType(TokenType.IDENTIFIER) || checkType(TokenType.VOID);
     }
+    
+    private boolean isOp(){
+	return checkType(TokenType.PLUS) || checkType(TokenType.MINUS) || checkType(TokenType.STAR) || checkType(TokenType.DIV) || checkType(TokenType.AND) || checkType(TokenType.OR) 
+		|| checkType(TokenType.LT) || checkType(TokenType.GT) || checkType(TokenType.ASSIGN) || checkType(TokenType.NE) || checkType(TokenType.LE) || checkType(TokenType.GE)
+		|| checkType(TokenType.EQ) || checkType(TokenType.NEG);
+    }
 
     private void match(int tokenType) {
 	if (!checkType(tokenType)) {
@@ -332,6 +393,71 @@ public class Parser {
 	}
 
 	return tokenStream.currentToken().type() == tokenType;
+    }
+    
+    private Expression expression(){
+	System.out.println("<expression>");
+	Expression left;
+	String op;
+	Expression right;
+	
+	left = term();
+	
+        System.out.println("</expression>");
+	if(isOp()){
+	    op = op();
+	    right = term();
+	    return new BinaryExpression(left, op, right);
+	}
+	else{
+	    return left;
+	}
+    }
+    
+    private Expression term(){
+	if(checkType(TokenType.INTEGER_CONSTANT)){
+	    int val = integerConstant();
+	    return new IntegerLiteral(val);
+	}
+	else if(checkType(TokenType.STRING_CONSTANT)){
+	    String val = stringConstant();
+	    return new StringLiteral(val);
+	}
+	else if(isKeywordConstant()){
+	    return keywordConsant();
+	}
+	else if(checkType(TokenType.IDENTIFIER)){ 
+	    
+
+	    
+	}
+	
+    }
+    
+    private boolean isKeywordConstant(){
+	return checkType(TokenType.TRUE) || checkType(TokenType.FALSE) || checkType(TokenType.NULL) || checkType(TokenType.THIS);
+    }
+    
+    private int integerConstant(){
+	String image = tokenStream.currentToken().image();
+	tokenStream.consume();
+	return Integer.parseInt(image);
+    }
+    
+    private String stringConstant(){
+	String image = tokenStream.currentToken().image();
+	tokenStream.consume();
+	return image;
+    }
+    
+    private String op() {
+	if(!isOp()){
+	    throw new Error("Parser:: op");
+	}
+	
+	String op = tokenStream.currentToken().image();
+	tokenStream.consume();
+	return op;
     }
 
 }

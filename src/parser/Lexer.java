@@ -135,7 +135,7 @@ public class Lexer {
 	} else if (charStream.current() == '=' && charStream.lookAhead(1) == '=') {
 	    charStream.consume();
 	    charStream.consume();
-	    return new Token("==", TokenType.EQUAL);
+	    return new Token("==", TokenType.EQ);
 	    
 	} else if (charStream.current() == '=') {
 	    charStream.consume();
