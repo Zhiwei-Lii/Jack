@@ -1,4 +1,4 @@
-package ast;
+package ast.expression;
 
 public class BinaryExpression extends Expression {
     Expression left;

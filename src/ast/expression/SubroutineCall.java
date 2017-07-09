@@ -1,8 +1,8 @@
-package ast;
+package ast.expression;
 
 import java.util.List;
 
-public class SubroutineCall {
+public class SubroutineCall extends Expression {
     boolean isStatic;
     List<Expression> args;
     String className;

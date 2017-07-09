@@ -1,6 +1,8 @@
-package ast;
+package ast.statement;
 
 import java.util.List;
+
+import ast.Type;
 
 public class VarStatement extends Statement {
     Type type;

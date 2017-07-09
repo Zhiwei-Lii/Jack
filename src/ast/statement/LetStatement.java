@@ -1,4 +1,6 @@
-package ast;
+package ast.statement;
+
+import ast.expression.Expression;
 
 public class LetStatement extends Statement {
     String varName;

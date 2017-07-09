@@ -2,6 +2,8 @@ package ast;
 
 import java.util.List;
 
+import ast.statement.Statement;
+
 public class Subroutine {
     String kind; // "constructor", "function", "method"
     Type type;

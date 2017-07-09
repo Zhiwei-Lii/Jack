@@ -1,6 +1,8 @@
-package ast;
+package ast.statement;
 
 import java.util.List;
+
+import ast.expression.Expression;
 
 public class IfStatement extends Statement {
     Expression expr;

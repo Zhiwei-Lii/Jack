@@ -1,6 +1,8 @@
-package ast;
+package ast.statement;
 
 import java.util.List;
+
+import ast.expression.Expression;
 
 public class WhileStatement extends Statement {
     Expression expr;
