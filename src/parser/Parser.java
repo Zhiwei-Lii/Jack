@@ -30,536 +30,557 @@ public class Parser {
     TokenStream tokenStream;
 
     public Parser(TokenStream tokenStream) {
-	this.tokenStream = tokenStream;
+        this.tokenStream = tokenStream;
     }
 
     public Class parse() {
-	return classDec();
+        return classDec();
     }
 
     private Class classDec() {
-	String className;
-	List<ClassVarDec> classVars = new ArrayList<ClassVarDec>();
-	List<Subroutine> subroutines = new ArrayList<Subroutine>();
+        String className;
+        List<ClassVarDec> classVars = new ArrayList<ClassVarDec>();
+        List<Subroutine> subroutines = new ArrayList<Subroutine>();
 
-	match(TokenType.CLASS);
-	System.out.println("<class>");
-	className = className();
-	match(TokenType.LCURLY);
+        match(TokenType.CLASS);
+        System.out.println("<class>");
+        className = className();
+        match(TokenType.LCURLY);
 
-	while (isClassVarDec()) {
-	    classVars.addAll(classVarDec());
-	}
+        while (isClassVarDec()) {
+            classVars.addAll(classVarDec());
+        }
 
-	while (isSubroutineDec()) {
-	    subroutines.add(subroutineDec());
-	}
+        while (isSubroutineDec()) {
+            subroutines.add(subroutineDec());
+        }
 
-	match(TokenType.RCURLY);
-	System.out.println("</class>");
+        match(TokenType.RCURLY);
+        System.out.println("</class>");
 
-	return new Class(className, classVars, subroutines);
+        return new Class(className, classVars, subroutines);
     }
 
     private String className() {
-	return IDENTIFIER();
+        return IDENTIFIER();
     }
 
     private String IDENTIFIER() {
-	if (!checkType(TokenType.IDENTIFIER)) {
-	    throw new Error("parse error!");
-	}
+        if (!checkType(TokenType.IDENTIFIER)) {
+            throw new Error("parse error!");
+        }
 
-	Token token = tokenStream.currentToken();
-	tokenStream.consume();
-	return token.image();
+        Token token = tokenStream.currentToken();
+        tokenStream.consume();
+        return token.image();
     }
 
     private List<ClassVarDec> classVarDec() {
-	List<ClassVarDec> classVarDecs = new ArrayList<ClassVarDec>();
-	boolean isStatic = false;
+        List<ClassVarDec> classVarDecs = new ArrayList<ClassVarDec>();
+        boolean isStatic = false;
 
-	System.out.println("<static-field>");
-	if (checkType(TokenType.STATIC)) {
-	    match(TokenType.STATIC);
-	    isStatic = true;
-	}
+        System.out.println("<static-field>");
+        if (checkType(TokenType.STATIC)) {
+            match(TokenType.STATIC);
+            isStatic = true;
+        }
 
-	if (checkType(TokenType.FIELD)) {
-	    match(TokenType.FIELD);
-	    isStatic = false;
-	}
+        if (checkType(TokenType.FIELD)) {
+            match(TokenType.FIELD);
+            isStatic = false;
+        }
 
-	Type type = type();
-	String varName = varName();
-	classVarDecs.add(new ClassVarDec(isStatic, type, varName));
+        Type type = type();
+        String varName = varName();
+        classVarDecs.add(new ClassVarDec(isStatic, type, varName));
 
-	while (checkType(TokenType.COMMA)) {
-	    match(TokenType.COMMA);
-	    varName = varName();
-	    classVarDecs.add(new ClassVarDec(isStatic, type, varName));
-	}
+        while (checkType(TokenType.COMMA)) {
+            match(TokenType.COMMA);
+            varName = varName();
+            classVarDecs.add(new ClassVarDec(isStatic, type, varName));
+        }
 
-	match(TokenType.SEMI);
-	System.out.println("</static-field>");
+        match(TokenType.SEMI);
+        System.out.println("</static-field>");
 
-	return classVarDecs;
+        return classVarDecs;
     }
 
     private String varName() {
-	return IDENTIFIER();
+        return IDENTIFIER();
     }
 
     private Type type() {
-	System.out.println("<type>");
+        System.out.println("<type>");
 
-	if (checkType(TokenType.INT)) {
-	    System.out.println("<int>");
-	    match(TokenType.INT);
-	    return new Type("int");
-	}
+        if (checkType(TokenType.INT)) {
+            System.out.println("<int>");
+            match(TokenType.INT);
+            return new Type("int");
+        }
 
-	if (checkType(TokenType.VOID)) {
-	    System.out.println("<VOID>");
-	    match(TokenType.VOID);
-	    return new Type("void");
-	}
+        if (checkType(TokenType.VOID)) {
+            System.out.println("<VOID>");
+            match(TokenType.VOID);
+            return new Type("void");
+        }
 
-	if (checkType(TokenType.CHAR)) {
-	    System.out.println("<char>");
-	    match(TokenType.CHAR);
-	    return new Type("char");
-	}
+        if (checkType(TokenType.CHAR)) {
+            System.out.println("<char>");
+            match(TokenType.CHAR);
+            return new Type("char");
+        }
 
-	if (checkType(TokenType.BOOLEAN)) {
-	    System.out.println("<boolean>");
-	    match(TokenType.BOOLEAN);
-	    return new Type("boolean");
-	}
+        if (checkType(TokenType.BOOLEAN)) {
+            System.out.println("<boolean>");
+            match(TokenType.BOOLEAN);
+            return new Type("boolean");
+        }
 
-	if (checkType(TokenType.IDENTIFIER)) {
-	    String typeName = className();
-	    return new Type(typeName);
-	}
+        if (checkType(TokenType.IDENTIFIER)) {
+            String typeName = className();
+            return new Type(typeName);
+        }
 
-	System.out.println("</type>");
-	return null;
+        System.out.println("</type>");
+        return null;
     }
 
     private Subroutine subroutineDec() {
-	System.out.println("<subroutine>");
+        System.out.println("<subroutine>");
 
-	String kind;
-	Type type;
-	String name;
-	List<Parameter> paras;
-	List<Statement> body;
+        String kind;
+        Type type;
+        String name;
+        List<Parameter> paras;
+        List<Statement> body;
 
-	kind = tokenStream.currentToken().image();
-	tokenStream.consume();
+        kind = tokenStream.currentToken().image();
+        tokenStream.consume();
 
-	type = type();
+        type = type();
 
-	name = subroutineName();
-	match(TokenType.LPAREN);
+        name = subroutineName();
+        match(TokenType.LPAREN);
 
-	paras = parameterList();
+        paras = parameterList();
 
-	match(TokenType.RPAREN);
+        match(TokenType.RPAREN);
 
-	body = subroutineBody();
+        body = subroutineBody();
 
-	System.out.println("</subroutine>");
+        System.out.println("</subroutine>");
     }
 
     private List<Statement> subroutineBody() {
-	List<Statement> body;
-	System.out.println("<subroutineBody>");
-	match(TokenType.LCURLY);
+        List<Statement> body;
+        System.out.println("<subroutineBody>");
+        match(TokenType.LCURLY);
 
-	body = statements();
+        body = statements();
 
-	match(TokenType.RCURLY);
-	System.out.println("</subroutineBody>");
+        match(TokenType.RCURLY);
+        System.out.println("</subroutineBody>");
 
-	return body;
+        return body;
     }
 
     private List<Statement> statements() {
-	List<Statement> body = new ArrayList<Statement>();
-	System.out.println("<statements>");
-	while (isStatement()) {
-	    body.add(statement());
-	}
-	System.out.println("</statements>");
-	return body;
+        List<Statement> body = new ArrayList<Statement>();
+        System.out.println("<statements>");
+        while (isStatement()) {
+            body.add(statement());
+        }
+        System.out.println("</statements>");
+        return body;
     }
 
     private Statement statement() {
-	if (checkType(TokenType.LET)) {
-	    return letStatement();
-	} else if (checkType(TokenType.IF)) {
-	    return ifStatement();
-	} else if (checkType(TokenType.WHILE)) {
-	    return whileStatement();
-	} else if (checkType(TokenType.DO)) {
-	    return doStatement();
-	} else if (checkType(TokenType.RETURN)) {
-	    return returnStatement();
-	} else if (checkType(TokenType.VAR)) {
-	    return varStatement();
-	} else {
-	    throw new Error("...");
-	}
+        if (checkType(TokenType.LET)) {
+            return letStatement();
+        }
+        else if (checkType(TokenType.IF)) {
+            return ifStatement();
+        }
+        else if (checkType(TokenType.WHILE)) {
+            return whileStatement();
+        }
+        else if (checkType(TokenType.DO)) {
+            return doStatement();
+        }
+        else if (checkType(TokenType.RETURN)) {
+            return returnStatement();
+        }
+        else if (checkType(TokenType.VAR)) {
+            return varStatement();
+        }
+        else {
+            throw new Error("...");
+        }
     }
 
     private boolean isStatement() {
-	return checkType(TokenType.LET) || checkType(TokenType.IF) || checkType(TokenType.WHILE)
-		|| checkType(TokenType.DO) || checkType(TokenType.RETURN) || checkType(TokenType.VAR);
+        return checkType(TokenType.LET) || checkType(TokenType.IF) || checkType(TokenType.WHILE)
+                || checkType(TokenType.DO) || checkType(TokenType.RETURN)
+                || checkType(TokenType.VAR);
     }
 
     private Statement ifStatement() {
-	System.out.println("<if-statement>");
-	Expression expr;
-	List<Statement> ifStmts;
-	List<Statement> elseStmts;
+        System.out.println("<if-statement>");
+        Expression expr;
+        List<Statement> ifStmts;
+        List<Statement> elseStmts;
 
-	match(TokenType.IF);
+        match(TokenType.IF);
 
-	match(TokenType.LPAREN);
-	expr = expression();
-	match(TokenType.RPAREN);
+        match(TokenType.LPAREN);
+        expr = expression();
+        match(TokenType.RPAREN);
 
-	match(TokenType.LCURLY);
-	ifStmts = statements();
-	match(TokenType.RCURLY);
+        match(TokenType.LCURLY);
+        ifStmts = statements();
+        match(TokenType.RCURLY);
 
-	if (checkType(TokenType.ELSE)) {
-	    match(TokenType.ELSE);
+        if (checkType(TokenType.ELSE)) {
+            match(TokenType.ELSE);
 
-	    match(TokenType.LCURLY);
-	    elseStmts = statements();
-	    match(TokenType.RCURLY);
-	}
+            match(TokenType.LCURLY);
+            elseStmts = statements();
+            match(TokenType.RCURLY);
+        }
 
-	System.out.println("</if-statement>");
+        System.out.println("</if-statement>");
 
-	return new IfStatement(expr, ifStmts, elseStmts);
+        return new IfStatement(expr, ifStmts, elseStmts);
     }
 
     private Statement whileStatement() {
-	System.out.println("<while-statement>");
-	Expression expr;
-	List<Statement> stmts;
+        System.out.println("<while-statement>");
+        Expression expr;
+        List<Statement> stmts;
 
-	match(TokenType.WHILE);
+        match(TokenType.WHILE);
 
-	match(TokenType.LPAREN);
-	expr = expression();
-	match(TokenType.RPAREN);
+        match(TokenType.LPAREN);
+        expr = expression();
+        match(TokenType.RPAREN);
 
-	match(TokenType.LCURLY);
-	stmts = statements();
-	match(TokenType.RCURLY);
+        match(TokenType.LCURLY);
+        stmts = statements();
+        match(TokenType.RCURLY);
 
-	System.out.println("</while-statement>");
+        System.out.println("</while-statement>");
 
-	return new WhileStatement(expr, stmts);
+        return new WhileStatement(expr, stmts);
     }
 
     private Statement doStatement() {
-	System.out.println("<do-statement>");
-	Expression subroutineCall;
+        System.out.println("<do-statement>");
+        Expression subroutineCall;
 
-	match(TokenType.DO);
-	subroutineCall = subroutineCall();
-	match(TokenType.SEMI);
+        match(TokenType.DO);
+        subroutineCall = subroutineCall();
+        match(TokenType.SEMI);
 
-	System.out.println("</do-statement>");
+        System.out.println("</do-statement>");
 
-	return new DoStatement(subroutineCall);
+        return new DoStatement(subroutineCall);
     }
 
     private Statement returnStatement() {
-	System.out.println("<return-statement>");
-	match(TokenType.RETURN);
+        System.out.println("<return-statement>");
+        match(TokenType.RETURN);
 
-	ReturnStatement returnStmt;
+        ReturnStatement returnStmt;
 
-	if (isExpression()) {
-	    Expression expr = expression();
-	    returnStmt = new ReturnStatement(expr);
-	} else {
-	    returnStmt = new ReturnStatement();
-	}
+        if (isExpression()) {
+            Expression expr = expression();
+            returnStmt = new ReturnStatement(expr);
+        }
+        else {
+            returnStmt = new ReturnStatement();
+        }
 
-	match(TokenType.SEMI);
-	System.out.println("</return-statement>");
+        match(TokenType.SEMI);
+        System.out.println("</return-statement>");
 
-	return returnStmt;
+        return returnStmt;
     }
 
     private Statement letStatement() {
-	System.out.println("<let-Statement>");
-	String varName;
-	Expression expr;
+        System.out.println("<let-Statement>");
+        String varName;
+        Expression expr;
 
-	match(TokenType.LET);
-	varName = IDENTIFIER();
-	match(TokenType.ASSIGN);
-	expr = expression();
-	match(TokenType.SEMI);
+        match(TokenType.LET);
+        varName = IDENTIFIER();
+        match(TokenType.ASSIGN);
+        expr = expression();
+        match(TokenType.SEMI);
 
-	System.out.println("</let-Statement>");
+        System.out.println("</let-Statement>");
 
-	return new LetStatement(varName, expr);
+        return new LetStatement(varName, expr);
     }
 
     private Statement varStatement() {
-	System.out.println("<var-Statement>");
-	Type type;
-	String name;
-	List<String> names = new ArrayList<String>();
+        System.out.println("<var-Statement>");
+        Type type;
+        String name;
+        List<String> names = new ArrayList<String>();
 
-	match(TokenType.VAR);
-	type = type();
-	name = varName();
-	names.add(name);
+        match(TokenType.VAR);
+        type = type();
+        name = varName();
+        names.add(name);
 
-	while (checkType(TokenType.COMMA)) {
-	    match(TokenType.COMMA);
-	    name = varName();
-	    names.add(name);
-	}
+        while (checkType(TokenType.COMMA)) {
+            match(TokenType.COMMA);
+            name = varName();
+            names.add(name);
+        }
 
-	match(TokenType.SEMI);
-	System.out.println("</var-Statement>");
+        match(TokenType.SEMI);
+        System.out.println("</var-Statement>");
 
-	return new VarStatement(type, names);
+        return new VarStatement(type, names);
     }
 
     private List<Parameter> parameterList() {
-	System.out.println("<parameterList>");
-	List<Parameter> paras = new ArrayList<Parameter>();
+        System.out.println("<parameterList>");
+        List<Parameter> paras = new ArrayList<Parameter>();
 
-	if (isType()) {
-	    Type type = type();
-	    String name = varName();
-	    paras.add(new Parameter(type, name));
+        if (isType()) {
+            Type type = type();
+            String name = varName();
+            paras.add(new Parameter(type, name));
 
-	    while (checkType(TokenType.COMMA)) {
-		match(TokenType.COMMA);
-		type = type();
-		name = varName();
-		paras.add(new Parameter(type, name));
-	    }
-	}
-	System.out.println("</parameterList>");
-	return paras;
+            while (checkType(TokenType.COMMA)) {
+                match(TokenType.COMMA);
+                type = type();
+                name = varName();
+                paras.add(new Parameter(type, name));
+            }
+        }
+        System.out.println("</parameterList>");
+        return paras;
     }
 
     private String subroutineName() {
-	System.out.println("<subroutineName>");
-	return IDENTIFIER();
+        System.out.println("<subroutineName>");
+        return IDENTIFIER();
     }
 
     private boolean isClassVarDec() {
-	return checkType(TokenType.STATIC) || checkType(TokenType.FIELD);
+        return checkType(TokenType.STATIC) || checkType(TokenType.FIELD);
     }
-    
+
     private boolean isExpression(){
 	lwkefjlkwefj
 	
     }
 
     private boolean isSubroutineDec() {
-	return checkType(TokenType.CONSTRUCTOR) || checkType(TokenType.FUNCTION) || checkType(TokenType.METHOD);
+        return checkType(TokenType.CONSTRUCTOR) || checkType(TokenType.FUNCTION)
+                || checkType(TokenType.METHOD);
     }
 
     private boolean isType() {
-	return checkType(TokenType.INT) || checkType(TokenType.CHAR) || checkType(TokenType.BOOLEAN)
-		|| checkType(TokenType.IDENTIFIER) || checkType(TokenType.VOID);
+        return checkType(TokenType.INT) || checkType(TokenType.CHAR) || checkType(TokenType.BOOLEAN)
+                || checkType(TokenType.IDENTIFIER) || checkType(TokenType.VOID);
     }
 
     private boolean isOp() {
-	return checkType(TokenType.PLUS) || checkType(TokenType.MINUS) || checkType(TokenType.STAR)
-		|| checkType(TokenType.DIV) || checkType(TokenType.AND) || checkType(TokenType.OR)
-		|| checkType(TokenType.LT) || checkType(TokenType.GT) || checkType(TokenType.ASSIGN)
-		|| checkType(TokenType.NE) || checkType(TokenType.LE) || checkType(TokenType.GE)
-		|| checkType(TokenType.EQ) || checkType(TokenType.NEG);
+        return checkType(TokenType.PLUS) || checkType(TokenType.MINUS) || checkType(TokenType.STAR)
+                || checkType(TokenType.DIV) || checkType(TokenType.AND) || checkType(TokenType.OR)
+                || checkType(TokenType.LT) || checkType(TokenType.GT) || checkType(TokenType.ASSIGN)
+                || checkType(TokenType.NE) || checkType(TokenType.LE) || checkType(TokenType.GE)
+                || checkType(TokenType.EQ) || checkType(TokenType.NEG);
     }
 
     private void match(int tokenType) {
-	if (!checkType(tokenType)) {
-	    throw new Error(
-		    "Except TokenType -> " + tokenType + "Receive TokenType ->" + tokenStream.currentToken().type());
-	}
+        if (!checkType(tokenType)) {
+            throw new Error("Except TokenType -> " + tokenType + "Receive TokenType ->"
+                    + tokenStream.currentToken().type());
+        }
 
-	tokenStream.consume();
+        tokenStream.consume();
     }
 
     private boolean checkType(int tokenType) {
-	if (!tokenStream.hasNext()) {
-	    throw new Error("EOF!");
-	}
+        if (!tokenStream.hasNext()) {
+            throw new Error("EOF!");
+        }
 
-	return tokenStream.currentToken().type() == tokenType;
+        return tokenStream.currentToken().type() == tokenType;
     }
 
     private Expression expression() {
-	System.out.println("<expression>");
-	Expression left;
-	String op;
-	Expression right;
+        System.out.println("<expression>");
+        Expression left;
+        String op;
+        Expression right;
 
-	left = term();
+        left = term();
 
-	System.out.println("</expression>");
-	if (isOp()) {
-	    op = op();
-	    right = term();
-	    return new BinaryExpression(left, op, right);
-	} else {
-	    return left;
-	}
+        System.out.println("</expression>");
+        if (isOp()) {
+            op = op();
+            right = term();
+            return new BinaryExpression(left, op, right);
+        }
+        else {
+            return left;
+        }
     }
 
     private Expression term() {
-	if (checkType(TokenType.INTEGER_CONSTANT)) {
-	    int val = integerConstant();
-	    return new IntegerLiteral(val);
-	} else if (checkType(TokenType.STRING_CONSTANT)) {
-	    String val = stringConstant();
-	    return new StringLiteral(val);
-	} else if (isKeywordConstant()) {
-	    return keywordConstant();
-	} else if (isVarName()) {
-	    return new VarName(IDENTIFIER());
-	} else if (isSubroutineCall()) {
-	    return subroutineCall();
-	} else if (checkType(TokenType.LPAREN)) {
-	    Expression expr;
+        if (checkType(TokenType.INTEGER_CONSTANT)) {
+            int val = integerConstant();
+            return new IntegerLiteral(val);
+        }
+        else if (checkType(TokenType.STRING_CONSTANT)) {
+            String val = stringConstant();
+            return new StringLiteral(val);
+        }
+        else if (isKeywordConstant()) {
+            return keywordConstant();
+        }
+        else if (isVarName()) {
+            return new VarName(IDENTIFIER());
+        }
+        else if (isSubroutineCall()) {
+            return subroutineCall();
+        }
+        else if (checkType(TokenType.LPAREN)) {
+            Expression expr;
 
-	    match(TokenType.LPAREN);
-	    expr = expression();
-	    match(TokenType.RPAREN);
+            match(TokenType.LPAREN);
+            expr = expression();
+            match(TokenType.RPAREN);
 
-	    return expr;
-	} else {
-	    throw new Error("syntax error!");
-	}
+            return expr;
+        }
+        else {
+            throw new Error("syntax error!");
+        }
     }
 
     private Expression subroutineCall() {
-	boolean isStatic;
-	String name;
-	String subroutineName;
-	List<Expression> args;
+        boolean isStatic;
+        String name;
+        String subroutineName;
+        List<Expression> args;
 
-	
-	System.out.println("<subroutineCall>");
-	
-	int lookaheadType = tokenStream.lookahead(1).type();
-	
-	if(lookaheadType==TokenType.LPAREN){
-	    isStatic = false;
-	    name = "this";
-	    
-	}
-	else if(lookaheadType==TokenType.DOT){
-	    name = IDENTIFIER();
-	    
-	    if(name.charAt(0)>='A'&&name.charAt(0)<='Z'){ //首字母大写为类名, 是静态方法调用
-		isStatic = true;
-	    }
-	    else{
-		isStatic = false;
-	    }
+        System.out.println("<subroutineCall>");
+
+        int lookaheadType = tokenStream.lookahead(1).type();
+
+        if (lookaheadType == TokenType.LPAREN) {
+            isStatic = false;
+            name = "this";
+
+        }
+        else if (lookaheadType == TokenType.DOT) {
+            name = IDENTIFIER();
+
+            if (name.charAt(0) >= 'A' && name.charAt(0) <= 'Z') { // 首字母大写为类名,
+                // 是静态方法调用
+                isStatic = true;
+            }
+            else {
+                isStatic = false;
+            }
             match(TokenType.DOT);
-	}
-	else{
-	    throw new Error("syntax error!");
-	}
-	
-	subroutineName = IDENTIFIER();
-	match(TokenType.LPAREN);
-	args = expressionList();
-	match(TokenType.RPAREN);
+        }
+        else {
+            throw new Error("syntax error!");
+        }
 
-	System.out.println("</subroutineCall>");
+        subroutineName = IDENTIFIER();
+        match(TokenType.LPAREN);
+        args = expressionList();
+        match(TokenType.RPAREN);
+
+        System.out.println("</subroutineCall>");
 
         return new SubroutineCall(isStatic, name, subroutineName, args);
     }
-    
-    private List<Expression> expressionList(){
-	List<Expression> exprList = new ArrayList<Expression>();
 
-	if(isExpression()){
-	    exprList.add(expression());
-	    
-	    while(checkType(TokenType.COMMA)){
-		match(TokenType.COMMA);
-		exprList.add(expression());
-	    }
-	}
-	
-	return exprList;
+    private List<Expression> expressionList() {
+        List<Expression> exprList = new ArrayList<Expression>();
+
+        if (isExpression()) {
+            exprList.add(expression());
+
+            while (checkType(TokenType.COMMA)) {
+                match(TokenType.COMMA);
+                exprList.add(expression());
+            }
+        }
+
+        return exprList;
     }
 
     private boolean isVarName() {
-	int lookaheadType = tokenStream.lookahead(1).type();
-	return checkType(TokenType.IDENTIFIER) && lookaheadType != TokenType.LBRACK && lookaheadType != TokenType.LPAREN
-		&& lookaheadType != TokenType.DOT;
+        int lookaheadType = tokenStream.lookahead(1).type();
+        return checkType(TokenType.IDENTIFIER) && lookaheadType != TokenType.LBRACK
+                && lookaheadType != TokenType.LPAREN && lookaheadType != TokenType.DOT;
     }
 
     private boolean isSubroutineCall() {
-	int lookaheadType = tokenStream.lookahead(1).type();
-	return checkType(TokenType.IDENTIFIER) && (lookaheadType == TokenType.LPAREN || lookaheadType == TokenType.DOT);
+        int lookaheadType = tokenStream.lookahead(1).type();
+        return checkType(TokenType.IDENTIFIER)
+                && (lookaheadType == TokenType.LPAREN || lookaheadType == TokenType.DOT);
     }
 
     private Expression keywordConstant() {
-	System.out.println("<keywordconstant");
-	System.out.println("</keywordconstant");
+        System.out.println("<keywordconstant");
+        System.out.println("</keywordconstant");
 
-	if (checkType(TokenType.TRUE)) {
-	    return new TrueLiteral();
-	} else if (checkType(TokenType.FALSE)) {
-	    return new FalseLiteral();
-	} else if (checkType(TokenType.NULL)) {
-	    return new NullLiteral();
-	} else if (checkType(TokenType.THIS)) {
-	    return new ThisLiteral();
-	} else {
-	    throw new Error("syntax error");
-	}
+        if (checkType(TokenType.TRUE)) {
+            return new TrueLiteral();
+        }
+        else if (checkType(TokenType.FALSE)) {
+            return new FalseLiteral();
+        }
+        else if (checkType(TokenType.NULL)) {
+            return new NullLiteral();
+        }
+        else if (checkType(TokenType.THIS)) {
+            return new ThisLiteral();
+        }
+        else {
+            throw new Error("syntax error");
+        }
 
     }
 
     private boolean isKeywordConstant() {
-	return checkType(TokenType.TRUE) || checkType(TokenType.FALSE) || checkType(TokenType.NULL)
-		|| checkType(TokenType.THIS);
+        return checkType(TokenType.TRUE) || checkType(TokenType.FALSE) || checkType(TokenType.NULL)
+                || checkType(TokenType.THIS);
     }
 
     private int integerConstant() {
-	String image = tokenStream.currentToken().image();
-	tokenStream.consume();
-	return Integer.parseInt(image);
+        String image = tokenStream.currentToken().image();
+        tokenStream.consume();
+        return Integer.parseInt(image);
     }
 
     private String stringConstant() {
-	String image = tokenStream.currentToken().image();
-	tokenStream.consume();
-	return image;
+        String image = tokenStream.currentToken().image();
+        tokenStream.consume();
+        return image;
     }
 
     private String op() {
-	if (!isOp()) {
-	    throw new Error("Parser:: op");
-	}
+        if (!isOp()) {
+            throw new Error("Parser:: op");
+        }
 
-	String op = tokenStream.currentToken().image();
-	tokenStream.consume();
-	return op;
+        String op = tokenStream.currentToken().image();
+        tokenStream.consume();
+        return op;
     }
 
 }
