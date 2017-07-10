@@ -1,12 +1,6 @@
 package parser;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import parser.CharStream;
 
@@ -14,8 +8,8 @@ public class Lexer {
     private CharStream charStream;
     private HashMap<String, Integer> keywords; // Keyword -> TokenType
 
-    public Lexer(String filePath) throws IOException {
-        this.charStream = new CharStream(filePath);
+    public Lexer(CharStream charStream) {
+        this.charStream = charStream;
         initKeywords();
     }
 
@@ -24,13 +18,15 @@ public class Lexer {
     }    
     
     public Token nextToken() {
-        if (isWhiteSpace()) {
+
+        while (isComment()) {
+            skipComment();
+        }
+
+        while (isWhiteSpace()) {
             skipWhiteSpace();
         }
 
-        if (isComment()) {
-            skipComment();
-        }
 
         if (isIdentifier()) {
             String image = identifier();
@@ -157,8 +153,8 @@ public class Lexer {
             return new Token("~", TokenType.NEG);
         }
         else {
-            System.out.println("Lexer::nextToken -> error");
-            return null;
+            System.out.println((int)charStream.current());
+            throw new Error("Lexer::nextToken -> error");
         }
     }
 
@@ -208,8 +204,7 @@ public class Lexer {
     }
 
     private boolean isComment() {
-        // TODO Auto-generated method stub
-        return false;
+        return charStream.current()=='/'&&charStream.lookAhead(1)=='/';
     }
 
     private boolean isDigit() {
@@ -240,8 +235,13 @@ public class Lexer {
     }
 
     private void skipComment() {
-        lksdfjlkjdsf
+        while(charStream.current()!='\n' && charStream.current()!='\r'){
+            charStream.consume();
+        }
 
+        while(charStream.current()=='\n'||charStream.current()=='\r'){
+            charStream.consume();
+        }
     }
 
     private void skipWhiteSpace() {

@@ -7,29 +7,30 @@ public class TokenStream {
     private LinkedList<Token> tokens;
 
     public TokenStream(Lexer lexer) {
-	tokens = new LinkedList<Token>();
-	while (lexer.hasNext()) {
-	    tokens.add(lexer.nextToken());
-	}
+        tokens = new LinkedList<Token>();
+        while (lexer.hasNext()) {
+            tokens.add(lexer.nextToken());
+            System.out.println(tokens.get(tokens.size()-1));
+        }
     }
 
     public Token lookahead(int k) {
-	if (k >= tokens.size()) {
-	    System.out.println("TokenStream::lookahead -> error");
-	}
-	return tokens.get(k);
+        if (k >= tokens.size()) {
+            System.out.println("TokenStream::lookahead -> error");
+        }
+        return tokens.get(k);
     }
 
     public Token currentToken() {
-	return lookahead(0);
+        return lookahead(0);
     }
-    
-    public void consume(){
-	tokens.removeFirst();
+
+    public void consume() {
+        tokens.removeFirst();
     }
 
     public boolean hasNext() {
-	return tokens.size() != 0;
+        return tokens.size() != 0;
     }
 
 }
