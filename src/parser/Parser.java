@@ -8,6 +8,7 @@ import ast.ClassVarDec;
 import ast.Parameter;
 import ast.Subroutine;
 import ast.Type;
+import ast.expression.ArrayRef;
 import ast.expression.BinaryExpression;
 import ast.expression.Expression;
 import ast.expression.FalseLiteral;
@@ -36,6 +37,18 @@ public class Parser {
     public Class parse() {
         return classDec();
     }
+    
+    private Expression arrayRef(){
+        String arrayName;
+        Expression index;
+        
+        arrayName = IDENTIFIER();
+        match(TokenType.LBRACK);
+        index = expression();
+        match(TokenType.RBRACK);
+
+        return new ArrayRef(arrayName, index);
+    }
 
     private boolean checkType(int tokenType) {
         if (!tokenStream.hasNext()) {
@@ -51,7 +64,6 @@ public class Parser {
         List<Subroutine> subroutines = new ArrayList<Subroutine>();
 
         match(TokenType.CLASS);
-        System.out.println("<class>");
         className = className();
         match(TokenType.LCURLY);
 
@@ -64,7 +76,6 @@ public class Parser {
         }
 
         match(TokenType.RCURLY);
-        System.out.println("</class>");
 
         return new Class(className, classVars, subroutines);
     }
@@ -77,7 +88,6 @@ public class Parser {
         List<ClassVarDec> classVarDecs = new ArrayList<ClassVarDec>();
         boolean isStatic = false;
 
-        System.out.println("<static-field>");
         if (checkType(TokenType.STATIC)) {
             match(TokenType.STATIC);
             isStatic = true;
@@ -99,33 +109,27 @@ public class Parser {
         }
 
         match(TokenType.SEMI);
-        System.out.println("</static-field>");
 
         return classVarDecs;
     }
 
     private Statement doStatement() {
-        System.out.println("<do-statement>");
         Expression subroutineCall;
 
         match(TokenType.DO);
         subroutineCall = subroutineCall();
         match(TokenType.SEMI);
 
-        System.out.println("</do-statement>");
-
         return new DoStatement(subroutineCall);
     }
 
     private Expression expression() {
-        System.out.println("<expression>");
         Expression left;
         String op;
         Expression right;
 
         left = term();
 
-        System.out.println("</expression>");
         if (isOp()) {
             op = op();
             right = term();
@@ -162,7 +166,6 @@ public class Parser {
     }
 
     private Statement ifStatement() {
-        System.out.println("<if-statement>");
         Expression expr;
         List<Statement> ifStmts;
         List<Statement> elseStmts = null;
@@ -185,8 +188,6 @@ public class Parser {
             match(TokenType.RCURLY);
         }
 
-        System.out.println("</if-statement>");
-
         return new IfStatement(expr, ifStmts, elseStmts);
     }
 
@@ -194,6 +195,11 @@ public class Parser {
         String image = tokenStream.currentToken().image();
         tokenStream.consume();
         return Integer.parseInt(image);
+    }
+
+    private boolean isArrayRef(){
+        int lookaheadType = tokenStream.lookahead(1).type();
+        return checkType(TokenType.IDENTIFIER) && lookaheadType == TokenType.LBRACK;
     }
 
     private boolean isClassVarDec() {
@@ -246,21 +252,23 @@ public class Parser {
         return checkType(TokenType.IDENTIFIER) && lookaheadType != TokenType.LBRACK
                 && lookaheadType != TokenType.LPAREN && lookaheadType != TokenType.DOT;
     }
-
+    
     private Expression keywordConstant() {
-        System.out.println("<keywordconstant");
-        System.out.println("</keywordconstant");
 
         if (checkType(TokenType.TRUE)) {
+            match(TokenType.TRUE);
             return new TrueLiteral();
         }
         else if (checkType(TokenType.FALSE)) {
+            match(TokenType.FALSE);
             return new FalseLiteral();
         }
         else if (checkType(TokenType.NULL)) {
+            match(TokenType.NULL);
             return new NullLiteral();
         }
         else if (checkType(TokenType.THIS)) {
+            match(TokenType.THIS);
             return new ThisLiteral();
         }
         else {
@@ -270,19 +278,24 @@ public class Parser {
     }
 
     private Statement letStatement() {
-        System.out.println("<let-Statement>");
         String varName;
-        Expression expr;
+        Expression index = null;
+        Expression value;
 
         match(TokenType.LET);
         varName = IDENTIFIER();
+        
+        if(checkType(TokenType.LBRACK)){
+            match(TokenType.LBRACK);
+            index = expression();
+            match(TokenType.RBRACK);
+        }
+        
         match(TokenType.ASSIGN);
-        expr = expression();
+        value = expression();
         match(TokenType.SEMI);
 
-        System.out.println("</let-Statement>");
-
-        return new LetStatement(varName, expr);
+        return new LetStatement(varName, index, value);
     }
 
     private void match(int tokenType) {
@@ -305,7 +318,6 @@ public class Parser {
     }
 
     private List<Parameter> parameterList() {
-        System.out.println("<parameterList>");
         List<Parameter> paras = new ArrayList<Parameter>();
 
         if (isType()) {
@@ -320,13 +332,12 @@ public class Parser {
                 paras.add(new Parameter(type, name));
             }
         }
-        System.out.println("</parameterList>");
+
         return paras;
     }
 
 
     private Statement returnStatement() {
-        System.out.println("<return-statement>");
         match(TokenType.RETURN);
 
         ReturnStatement returnStmt;
@@ -340,7 +351,6 @@ public class Parser {
         }
 
         match(TokenType.SEMI);
-        System.out.println("</return-statement>");
 
         return returnStmt;
     }
@@ -371,11 +381,11 @@ public class Parser {
 
     private List<Statement> statements() {
         List<Statement> body = new ArrayList<Statement>();
-        System.out.println("<statements>");
+        
         while (isStatement()) {
             body.add(statement());
         }
-        System.out.println("</statements>");
+
         return body;
     }
 
@@ -387,13 +397,10 @@ public class Parser {
 
     private List<Statement> subroutineBody() {
         List<Statement> body;
-        System.out.println("<subroutineBody>");
+
         match(TokenType.LCURLY);
-
         body = statements();
-
         match(TokenType.RCURLY);
-        System.out.println("</subroutineBody>");
 
         return body;
     }
@@ -403,8 +410,6 @@ public class Parser {
         String name;
         String subroutineName;
         List<Expression> args;
-
-        System.out.println("<subroutineCall>");
 
         int lookaheadType = tokenStream.lookahead(1).type();
 
@@ -434,14 +439,10 @@ public class Parser {
         args = expressionList();
         match(TokenType.RPAREN);
 
-        System.out.println("</subroutineCall>");
-
         return new SubroutineCall(isStatic, name, subroutineName, args);
     }
 
     private Subroutine subroutineDec() {
-        System.out.println("<subroutine>");
-
         String kind;
         Type type;
         String name;
@@ -462,13 +463,10 @@ public class Parser {
 
         body = subroutineBody();
 
-        System.out.println("</subroutine>");
-
         return new Subroutine(kind, type, name, paras, body);
     }
 
     private String subroutineName() {
-        System.out.println("<subroutineName>");
         return IDENTIFIER();
     }
 
@@ -486,6 +484,9 @@ public class Parser {
         }
         else if (isVarName()) {
             return new VarName(IDENTIFIER());
+        }
+        else if(isArrayRef()){
+            return arrayRef();
         }
         else if (isSubroutineCall()) {
             return subroutineCall();
@@ -505,28 +506,23 @@ public class Parser {
     }
 
     private Type type() {
-        System.out.println("<type>");
 
         if (checkType(TokenType.INT)) {
-            System.out.println("<int>");
             match(TokenType.INT);
             return new Type("int");
         }
 
         if (checkType(TokenType.VOID)) {
-            System.out.println("<VOID>");
             match(TokenType.VOID);
             return new Type("void");
         }
 
         if (checkType(TokenType.CHAR)) {
-            System.out.println("<char>");
             match(TokenType.CHAR);
             return new Type("char");
         }
 
         if (checkType(TokenType.BOOLEAN)) {
-            System.out.println("<boolean>");
             match(TokenType.BOOLEAN);
             return new Type("boolean");
         }
@@ -536,7 +532,6 @@ public class Parser {
             return new Type(typeName);
         }
 
-        System.out.println("</type>");
         return null;
     }
 
@@ -545,7 +540,6 @@ public class Parser {
     }
 
     private Statement varStatement() {
-        System.out.println("<var-Statement>");
         Type type;
         String name;
         List<String> names = new ArrayList<String>();
@@ -562,13 +556,11 @@ public class Parser {
         }
 
         match(TokenType.SEMI);
-        System.out.println("</var-Statement>");
 
         return new VarStatement(type, names);
     }
 
     private Statement whileStatement() {
-        System.out.println("<while-statement>");
         Expression expr;
         List<Statement> stmts;
 
@@ -581,8 +573,6 @@ public class Parser {
         match(TokenType.LCURLY);
         stmts = statements();
         match(TokenType.RCURLY);
-
-        System.out.println("</while-statement>");
 
         return new WhileStatement(expr, stmts);
     }

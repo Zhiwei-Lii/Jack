@@ -15,18 +15,18 @@ public class Lexer {
 
     public boolean hasNext() {
         return !charStream.isEOF();
-    }    
-    
+    }
+
     public Token nextToken() {
 
-        while (isComment()) {
-            skipComment();
+        while (isComment() || isWhiteSpace()) {
+            if (isComment()) {
+                skipComment();
+            }
+            else if (isWhiteSpace()) {
+                skipWhiteSpace();
+            }
         }
-
-        while (isWhiteSpace()) {
-            skipWhiteSpace();
-        }
-
 
         if (isIdentifier()) {
             String image = identifier();
@@ -116,6 +116,10 @@ public class Lexer {
             charStream.consume();
             return new Token("|", TokenType.OR);
         }
+        else if (charStream.current() == '|') {
+            charStream.consume();
+            return new Token("|", TokenType.OR);
+        }
         else if (charStream.current() == '<') {
             charStream.consume();
             return new Token("<", TokenType.LT);
@@ -153,7 +157,7 @@ public class Lexer {
             return new Token("~", TokenType.NEG);
         }
         else {
-            System.out.println((int)charStream.current());
+            System.out.println(charStream.current());
             throw new Error("Lexer::nextToken -> error");
         }
     }
@@ -204,7 +208,7 @@ public class Lexer {
     }
 
     private boolean isComment() {
-        return charStream.current()=='/'&&charStream.lookAhead(1)=='/';
+        return charStream.current() == '/' && charStream.lookAhead(1) == '/';
     }
 
     private boolean isDigit() {
@@ -235,11 +239,11 @@ public class Lexer {
     }
 
     private void skipComment() {
-        while(charStream.current()!='\n' && charStream.current()!='\r'){
+        while (charStream.current() != '\n' && charStream.current() != '\r') {
             charStream.consume();
         }
 
-        while(charStream.current()=='\n'||charStream.current()=='\r'){
+        while (charStream.current() == '\n' || charStream.current() == '\r') {
             charStream.consume();
         }
     }
