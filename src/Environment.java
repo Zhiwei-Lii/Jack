@@ -5,4 +5,5 @@ public interface Environment {
     public Object get(String name);
     
     public boolean isDefined(String name);
+    
 }

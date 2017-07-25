@@ -5,12 +5,28 @@ import java.util.List;
 import ast.expression.Expression;
 
 public class WhileStatement extends Statement {
-    Expression expr;
+    Expression condition;
     List<Statement> stmts;
-    
-    public WhileStatement(Expression expr, List<Statement> stmts){
-	this.expr = expr;
-	this.stmts = stmts;
+
+    public WhileStatement(Expression condition, List<Statement> stmts) {
+        this.condition = condition;
+        this.stmts = stmts;
+    }
+
+    public List<Statement> getStmts() {
+        return stmts;
+    }
+
+    public void setStmts(List<Statement> stmts) {
+        this.stmts = stmts;
+    }
+
+    public Expression getCondition() {
+        return condition;
+    }
+
+    public void setCondition(Expression condition) {
+        this.condition = condition;
     }
 
 }

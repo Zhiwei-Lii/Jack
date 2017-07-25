@@ -1,10 +1,6 @@
 import ast.ClassVarDec;
 import ast.Class;
 
-public interface Visitor<T> {
+public interface Visitor {
     
-    public T visit(Class cl);
-    
-    public T visit(ClassVarDec classVarDec);
-
 }

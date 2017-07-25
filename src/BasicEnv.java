@@ -16,10 +16,6 @@ public class BasicEnv implements Environment {
     }
 
     public void put(String name, Object entity) {
-        if (isDefined(name)) {
-            throw new Error("the variable has been defined");
-        }
-
         map.put(name, entity);
     }
 
@@ -27,7 +23,7 @@ public class BasicEnv implements Environment {
         Object entity = map.get(name);
 
         if (entity == null && outer == null) {
-            throw new Error("the variable has not been found");
+            throw new Error("the variable " + name +" has not been found");
         }
         else if (entity == null && outer != null) {
             return outer.get(name);

@@ -13,8 +13,8 @@ public class Main {
         TokenStream tokenStream = new TokenStream(lexer);
         Parser parser = new Parser(tokenStream);
         
-        parser.parse();
-        
+        //parser.parse();
+        EvalVisitor v = new EvalVisitor(parser.parse());
     }
 
 }

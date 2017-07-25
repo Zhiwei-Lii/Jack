@@ -37,5 +37,4 @@ public class Class extends Node {
         this.subroutines = subroutines;
     }
     
-    
 }

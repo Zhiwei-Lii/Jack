@@ -17,4 +17,28 @@ public class LetStatement extends Statement {
         return index != null;
     }
 
+    public String getVarName() {
+        return varName;
+    }
+
+    public void setVarName(String varName) {
+        this.varName = varName;
+    }
+
+    public Expression getIndex() {
+        return index;
+    }
+
+    public void setIndex(Expression index) {
+        this.index = index;
+    }
+
+    public Expression getValue() {
+        return value;
+    }
+
+    public void setValue(Expression value) {
+        this.value = value;
+    }
+
 }
