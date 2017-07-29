@@ -14,11 +14,10 @@ public class Lexer {
     }
 
     public boolean hasNext() {
-        return !charStream.isEOF();
+        return charStream.hasNext();
     }
 
     public Token nextToken() {
-
         while (isComment() || isWhiteSpace()) {
             if (isComment()) {
                 skipComment();
@@ -28,7 +27,7 @@ public class Lexer {
             }
         }
 
-        if (isIdentifier()) {
+        if (isLetter() || charStream.current() == '_') {
             String image = identifier();
 
             if (isKeyword(image)) {
@@ -48,6 +47,7 @@ public class Lexer {
             return new Token(image, TokenType.STRING_CONSTANT);
         }
         else if (charStream.isEOF()) {
+            charStream.consume();
             return new Token("EOF", TokenType.EOF);
         }
         else if (charStream.current() == '(') {
@@ -165,7 +165,12 @@ public class Lexer {
     private String identifier() {
         String image = "";
 
-        while (isIdentifier()) {
+        if (isLetter()) {
+            image += charStream.current();
+            charStream.consume();
+        }
+
+        while (isLetter() || isDigit()) {
             image += charStream.current();
             charStream.consume();
         }
@@ -216,9 +221,9 @@ public class Lexer {
         return c >= '0' && c <= '9';
     }
 
-    private boolean isIdentifier() {
+    private boolean isLetter() {
         char c = charStream.current();
-        return (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_');
+        return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z';
     }
 
     private boolean isKeyword(String image) {

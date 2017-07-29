@@ -14,7 +14,8 @@ public class Main {
         Parser parser = new Parser(tokenStream);
         
         //parser.parse();
-        EvalVisitor v = new EvalVisitor(parser.parse());
+        Environment topEnv = new BasicEnv();
+        Evaluator v = new Evaluator(parser.parse(), topEnv);
     }
 
 }

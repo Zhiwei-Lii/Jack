@@ -3,32 +3,27 @@ package ast.expression;
 import java.util.List;
 
 public class SubroutineCall extends Expression {
-    boolean isStatic;
     List<Expression> args;
-    String className;
-    String objectName;
+    String prefixName;
     String subroutineName;
 
-    public SubroutineCall(boolean isStatic, String name, String subroutineName,
-            List<Expression> args) {
-        this.isStatic = isStatic;
+    // when detail with f(), the prefixName is ""(blank). in the classInfo environment, ""(blank) is mapped to classInfo.
+    public SubroutineCall(String prefixName, String subroutineName, List<Expression> args) {
         this.args = args;
+        this.prefixName = prefixName;
         this.subroutineName = subroutineName;
-
-        if (isStatic) {
-            this.className = name;
-        }
-        else {
-            this.objectName = name;
-        }
     }
 
-    public boolean isStatic() {
-        return isStatic;
+    public boolean prefixIsUpper() {
+        return !prefixIsBlank() && prefixName.charAt(0) <= 'Z' && prefixName.charAt(0) >= 'A';
     }
 
-    public void setStatic(boolean isStatic) {
-        this.isStatic = isStatic;
+    public boolean prefixIsLower() {
+        return !prefixIsBlank() && prefixName.charAt(0) <= 'z' && prefixName.charAt(0) >= 'a';
+    }
+
+    public boolean prefixIsBlank() {
+        return prefixName.equals("");
     }
 
     public List<Expression> getArgs() {
@@ -39,20 +34,12 @@ public class SubroutineCall extends Expression {
         this.args = args;
     }
 
-    public String getClassName() {
-        return className;
+    public String getPrefixName() {
+        return prefixName;
     }
 
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
-    public String getObjectName() {
-        return objectName;
-    }
-
-    public void setObjectName(String objectName) {
-        this.objectName = objectName;
+    public void setPrefixName(String prefixName) {
+        this.prefixName = prefixName;
     }
 
     public String getSubroutineName() {
@@ -62,5 +49,4 @@ public class SubroutineCall extends Expression {
     public void setSubroutineName(String subroutineName) {
         this.subroutineName = subroutineName;
     }
-
 }

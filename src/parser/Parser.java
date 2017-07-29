@@ -34,8 +34,8 @@ public class Parser {
         this.tokenStream = tokenStream;
     }
 
-    public Class parse() {
-        return classDec();
+    public List<Class> parse() {
+        return classDecList();
     }
     
     private Expression arrayRef(){
@@ -60,7 +60,8 @@ public class Parser {
 
     private Class classDec() {
         String className;
-        List<ClassVarDec> classVars = new ArrayList<ClassVarDec>();
+        List<ClassVarDec> staticVars = new ArrayList<ClassVarDec>();
+        List<ClassVarDec> fieldVars = new ArrayList<ClassVarDec>();
         List<Subroutine> subroutines = new ArrayList<Subroutine>();
 
         match(TokenType.CLASS);
@@ -68,7 +69,14 @@ public class Parser {
         match(TokenType.LCURLY);
 
         while (isClassVarDec()) {
-            classVars.addAll(classVarDec());
+            List<ClassVarDec> list = classVarDec();
+
+            if(list.get(0).isStatic()){
+                staticVars.addAll(list);
+            }
+            else{
+                fieldVars.addAll(list);
+            }
         }
 
         while (isSubroutineDec()) {
@@ -77,7 +85,17 @@ public class Parser {
 
         match(TokenType.RCURLY);
 
-        return new Class(className, classVars, subroutines);
+        return new Class(className, staticVars, fieldVars, subroutines);
+    }
+    
+    private List<Class> classDecList() {
+        List<Class> list = new ArrayList<Class>();
+        while(tokenStream.currentToken().type()!=TokenType.EOF){
+            Class cl = classDec();
+            list.add(cl);
+        }
+        
+        return list;
     }
 
     private String className() {
@@ -406,32 +424,15 @@ public class Parser {
     }
 
     private Expression subroutineCall() {
-        boolean isStatic;
-        String name;
+        String prefixName = "";
         String subroutineName;
         List<Expression> args;
 
         int lookaheadType = tokenStream.lookahead(1).type();
 
-        if (lookaheadType == TokenType.LPAREN) {
-            isStatic = false;
-            name = "this";
-
-        }
-        else if (lookaheadType == TokenType.DOT) {
-            name = IDENTIFIER();
-
-            if (name.charAt(0) >= 'A' && name.charAt(0) <= 'Z') { // 首字母大写为类名,
-                // 是静态方法调用
-                isStatic = true;
-            }
-            else {
-                isStatic = false;
-            }
+        if(lookaheadType==TokenType.DOT){
+            prefixName = IDENTIFIER();
             match(TokenType.DOT);
-        }
-        else {
-            throw new Error("syntax error!");
         }
 
         subroutineName = IDENTIFIER();
@@ -439,7 +440,7 @@ public class Parser {
         args = expressionList();
         match(TokenType.RPAREN);
 
-        return new SubroutineCall(isStatic, name, subroutineName, args);
+        return new SubroutineCall(prefixName, subroutineName, args);
     }
 
     private Subroutine subroutineDec() {

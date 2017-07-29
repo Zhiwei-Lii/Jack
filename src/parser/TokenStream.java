@@ -10,6 +10,7 @@ public class TokenStream {
         tokens = new LinkedList<Token>();
         while (lexer.hasNext()) {
             tokens.add(lexer.nextToken());
+            System.out.println(tokens.get(tokens.size()-1));
         }
     }
 

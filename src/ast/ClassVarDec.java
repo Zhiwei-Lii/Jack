@@ -7,4 +7,8 @@ public class ClassVarDec extends Variable {
         super(type, varName);
         this.isStatic = isStatic;
     }
+    
+    public boolean isStatic(){
+        return isStatic;
+    }
 }

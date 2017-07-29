@@ -59,5 +59,17 @@ public class Subroutine {
     public void setBody(List<Statement> body) {
         this.body = body;
     }
+    
+    public boolean isStatic(){
+        return kind.equals("function");
+    }
+    
+    public boolean isConstructor(){
+        return kind.equals("constructor");
+    }
+    
+    public boolean isMethod(){
+        return kind.equals("method");
+    }
 
 }

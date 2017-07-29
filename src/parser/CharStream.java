@@ -44,6 +44,10 @@ public class CharStream {
         return current() == (char) -1;
     }
 
+    public boolean hasNext() {
+        return pointer < buffer.size();
+    }
+
     public char lookAhead(int offset) {
         return buffer.get(pointer + offset);
     }

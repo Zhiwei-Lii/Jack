@@ -1,8 +1,8 @@
 
-public class ReturnException extends Exception {
+public class ReturnValue extends Exception {
     Object value;
     
-    public ReturnException(Object value){
+    public ReturnValue(Object value){
         this.value = value;
     }
 
