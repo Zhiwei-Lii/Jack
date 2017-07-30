@@ -9,4 +9,20 @@ public class ArrayRef extends Expression {
         this.index = index;
     }
 
+    public String getArrayName() {
+        return arrayName;
+    }
+
+    public void setArrayName(String arrayName) {
+        this.arrayName = arrayName;
+    }
+
+    public Expression getIndex() {
+        return index;
+    }
+
+    public void setIndex(Expression index) {
+        this.index = index;
+    }
+
 }

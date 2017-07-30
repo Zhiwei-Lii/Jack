@@ -3,6 +3,7 @@ import java.io.FileNotFoundException;
 import evaluator.BasicEnv;
 import evaluator.Environment;
 import evaluator.Evaluator;
+import natives.Array;
 import natives.Input;
 import natives.Output;
 import parser.CharStream;
@@ -26,6 +27,7 @@ public class Main {
     public static void registerNatives(Environment env){
         Output.appendToEnv(env);
         Input.appendToEnv(env);
+        Array.appendToEnv(env);
     }
 
 }

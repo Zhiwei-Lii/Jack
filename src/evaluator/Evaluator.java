@@ -25,7 +25,6 @@ public class Evaluator {
         eval(classList, topEnv);
         SubroutineCall mainCall = new SubroutineCall("Main", "main", new ArrayList());
         Object returnValue = eval(mainCall, (Environment) topEnv.get("Main"));
-        System.out.println((Integer) returnValue);
     }
 
     public void eval(List<Class> classList, Environment topEnv) {
@@ -68,8 +67,9 @@ public class Evaluator {
         try {
             return subroutine.getMethod().invoke(null, args);
         } catch (Exception e) {
+            System.out.println(e);
             throw new Error(
-                    "unable to invoke the nativeSubroutine " + subroutine.getSubroutineName());
+                    "unable to invoke the nativeSubroutine: " + subroutine.getSubroutineName());
         }
     }
 
@@ -96,7 +96,6 @@ public class Evaluator {
         }
     }
 
-    // 暂时没有处理数组引用!!!!!!!!!
     public void eval(LetStatement letStatement, Environment env) {
         String varName = letStatement.getVarName();
         Object value = eval(letStatement.getValue(), env);
@@ -104,9 +103,16 @@ public class Evaluator {
         if (!env.isDefined(varName)) {
             throw new Error(varName + " has not been defined");
         }
+
+        /* find which environment the var is defined */
+        Environment definedEnv = env.returnEnv(varName);
+
+        if (letStatement.hasArrayRef()) {
+            int index = (Integer) eval(letStatement.getIndex(), env);
+            JackObject array = (JackObject) definedEnv.get(varName);
+            array.put(index + "", value);
+        }
         else {
-            /* find which environment the var is defined */
-            Environment definedEnv = env.returnEnv(varName);
             definedEnv.put(varName, value);
         }
     }
@@ -130,6 +136,19 @@ public class Evaluator {
             for (Statement stmt : stmts) {
                 eval(stmt, env);
             }
+        }
+    }
+
+    public Object eval(UnaryExpression unaryExpr, Environment env) {
+        String op = unaryExpr.getOp();
+        if (op.equals("-")) {
+            return -(Integer) eval(unaryExpr.getExpr(), env);
+        }
+        else if (op.equals("~")) {
+            return ~(Integer) eval(unaryExpr.getExpr(), env);
+        }
+        else {
+            throw new Error("undefined op");
         }
     }
 
@@ -431,10 +450,17 @@ public class Evaluator {
         return env.get(varName.getVarName());
     }
 
+    public Object eval(ArrayRef arrayRef, Environment env) {
+        String arrayName = arrayRef.getArrayName();
+        int index = (Integer) eval(arrayRef.getIndex(), env);
+
+        JackObject array = (JackObject) env.get(arrayName);
+        return array.get(index + "");
+    }
+
     public Object eval(Expression e, Environment env) {
         if (e instanceof ArrayRef) {
-            //
-            return null;
+            return eval((ArrayRef) e, env);
         }
         else if (e instanceof BinaryExpression) {
             return eval((BinaryExpression) e, env);
@@ -462,6 +488,9 @@ public class Evaluator {
         }
         else if (e instanceof VarName) {
             return eval((VarName) e, env);
+        }
+        else if (e instanceof UnaryExpression) {
+            return eval((UnaryExpression) e, env);
         }
         else {
             throw new Error();

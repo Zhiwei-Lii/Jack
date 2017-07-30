@@ -18,6 +18,7 @@ import ast.expression.StringLiteral;
 import ast.expression.SubroutineCall;
 import ast.expression.ThisLiteral;
 import ast.expression.TrueLiteral;
+import ast.expression.UnaryExpression;
 import ast.expression.VarName;
 import ast.statement.DoStatement;
 import ast.statement.IfStatement;
@@ -148,7 +149,7 @@ public class Parser {
 
         left = term();
 
-        if (isOp()) {
+        if (isBinOp()) {
             op = op();
             right = term();
             return new BinaryExpression(left, op, right);
@@ -227,7 +228,7 @@ public class Parser {
     private boolean isExpression() {
         return checkType(TokenType.INTEGER_CONSTANT) || checkType(TokenType.STRING_CONSTANT)
                 || isKeywordConstant() || checkType(TokenType.IDENTIFIER)
-                || checkType(TokenType.LPAREN);
+                || checkType(TokenType.LPAREN) || isUnaryOp();
     }
 
     private boolean isKeywordConstant() {
@@ -235,7 +236,7 @@ public class Parser {
                 || checkType(TokenType.THIS);
     }
 
-    private boolean isOp() {
+    private boolean isBinOp() {
         return checkType(TokenType.PLUS) || checkType(TokenType.MINUS) || checkType(TokenType.STAR)
                 || checkType(TokenType.DIV) || checkType(TokenType.AND) || checkType(TokenType.OR)
                 || checkType(TokenType.LT) || checkType(TokenType.GT) || checkType(TokenType.ASSIGN)
@@ -326,7 +327,7 @@ public class Parser {
     }
 
     private String op() {
-        if (!isOp()) {
+        if (!isBinOp()&&!isUnaryOp()) {
             throw new Error("Parser:: op");
         }
 
@@ -395,6 +396,10 @@ public class Parser {
         else {
             throw new Error("...");
         }
+    }
+    
+    private boolean isUnaryOp(){
+        return checkType(TokenType.NEG) || checkType(TokenType.MINUS);
     }
 
     private List<Statement> statements() {
@@ -500,6 +505,10 @@ public class Parser {
             match(TokenType.RPAREN);
 
             return expr;
+        }
+        else if(isUnaryOp()){
+            String op = op();
+            return new UnaryExpression(op, term());
         }
         else {
             throw new Error("syntax error!");

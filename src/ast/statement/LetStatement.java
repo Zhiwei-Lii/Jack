@@ -13,7 +13,7 @@ public class LetStatement extends Statement {
         this.value = value;
     }
 
-    public boolean isArrayRef() {
+    public boolean hasArrayRef() {
         return index != null;
     }
 

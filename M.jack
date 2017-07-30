@@ -8,29 +8,19 @@
 class Main {
 
     function void main() {
-	var Ball ball;
+	var Ball2 ball2;
 	var int abc;
+	var Array array;
+	let array = Array.construct(3);
+	let array[0] = 2;
+	do Output.printLn(array[0]);
 	let abc = Input.readInt();
 	do Output.printLn(abc);
-	let ball = Ball.new();
+	let ball2 = Ball2.new();
 	
-	do Output.printLn(Math.abs(0-4));
-      	return ball.getA();
+	do Output.printLn(ball2.getA());
     }
 
-}
-
-class Ball {
-	field Ball2 ball2;
-
-	constructor Ball new(){
-		let ball2 = Ball2.new();
-		return this;
-	}
-
-	method int getA() {
-		return ball2.getA();
-	}
 }
 
 class Ball2 {
