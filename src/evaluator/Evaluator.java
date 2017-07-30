@@ -2,7 +2,6 @@ package evaluator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 import ast.Class;
 import ast.ClassVarDec;
@@ -255,6 +254,33 @@ public class Evaluator {
         return stringLiteral.getVal();
     }
 
+    //  这里可以加入更多错误处理
+    private Object findSubroutine(SubroutineCall subroutineCall, Environment env){
+
+        if(subroutineCall.prefixIsBlank()){
+            String subroutineName = subroutineCall.getSubroutineName();
+
+            if (!(env.get(subroutineName) instanceof Subroutine)) {
+                throw new Error("Unable to call the subroutine, the name may has been used");
+            }
+
+            Object subroutine = (Subroutine) env.get(subroutineName);
+            return subroutine;
+        }
+        else if(subroutineCall.prefixIsLower()){
+            JackObject jackObject = (JackObject) env.get(subroutineCall.getPrefixName());
+            ClassInfo classInfo = (ClassInfo) jackObject.getClassInfo();
+            Object subroutine = classInfo.get(subroutineCall.getSubroutineName());
+            return subroutine;
+        }
+        else if(subroutineCall.prefixIsUpper()){
+            ClassInfo classInfo = (ClassInfo) env.get(subroutineCall.getPrefixName());
+            Object subroutine = classInfo.get(subroutineCall.getSubroutineName());
+            return subroutine;
+        }
+        
+        return null;
+    }
 
     /**
      * 处理面向对象的调用 包括构造函数的调用 构造函数视作一般的静态函数处理, 但是要额外处理this(一般的静态调用不会有this) 放在运行时去判断是否是static 构造器很有意思,
@@ -263,9 +289,7 @@ public class Evaluator {
      */
     public Object eval(SubroutineCall subroutineCall, Environment env) {
         if (isNative(subroutineCall, env)) {
-            ClassInfo classInfo = (ClassInfo) env.get(subroutineCall.getPrefixName());
-            NativeSubroutine nativeSubroutine =
-                    (NativeSubroutine) classInfo.get(subroutineCall.getSubroutineName());
+            NativeSubroutine nativeSubroutine = (NativeSubroutine) findSubroutine(subroutineCall, env);
 
             Object[] args = new Object[subroutineCall.getArgs().size()];
 
@@ -277,46 +301,29 @@ public class Evaluator {
             return eval(nativeSubroutine, args);
         }
 
-        boolean isStatic = subroutineIsStatic(subroutineCall, env);
-        boolean isConstructor = subroutineIsConstructor(subroutineCall, env);
-        boolean isMethod = !isStatic && !isConstructor;
+        Subroutine subroutine = (Subroutine)findSubroutine(subroutineCall, env);
 
-        Subroutine subroutine = null;
         Environment localEnv = null;
 
-        if (isConstructor) {
-            if (!(env.get(subroutineCall.getPrefixName()) instanceof ClassInfo)) {
-                throw new Error("unable to find the class " + subroutineCall.getPrefixName());
-            }
-
+        if (subroutine.isConstructor()) {
             ClassInfo classInfo = (ClassInfo) env.get(subroutineCall.getPrefixName());
 
             if (!(classInfo.get(subroutineCall.getSubroutineName()) instanceof Subroutine)) {
                 throw new Error(
                         "unable to find the subroutine " + subroutineCall.getSubroutineName());
             }
-
-            subroutine = (Subroutine) classInfo.get(subroutineCall.getSubroutineName());
 
             Environment jackObject = newObject(classInfo);
             localEnv = new BasicEnv(jackObject);
         }
-        else if (isStatic) {
+        else if (subroutine.isStatic()) {
             if (!(env.get(subroutineCall.getPrefixName()) instanceof ClassInfo)) {
                 throw new Error("unable to find the class " + subroutineCall.getPrefixName());
             }
 
-            ClassInfo classInfo = (ClassInfo) env.get(subroutineCall.getPrefixName());
-
-            if (!(classInfo.get(subroutineCall.getSubroutineName()) instanceof Subroutine)) {
-                throw new Error(
-                        "unable to find the subroutine " + subroutineCall.getSubroutineName());
-            }
-
-            subroutine = (Subroutine) classInfo.get(subroutineCall.getSubroutineName());
             localEnv = new BasicEnv(env);
         }
-        else if (isMethod) {
+        else if (subroutine.isMethod()) {
             if (subroutineCall.prefixIsBlank()) {
                 subroutineCall.setPrefixName("this");
             }
@@ -332,7 +339,6 @@ public class Evaluator {
                         "unable to find the subroutine " + subroutineCall.getSubroutineName());
             }
 
-            subroutine = (Subroutine) jackObject.get(subroutineCall.getSubroutineName());
             localEnv = new BasicEnv(jackObject);
         }
         else {
@@ -345,85 +351,8 @@ public class Evaluator {
     }
 
     private boolean isNative(SubroutineCall subroutineCall, Environment env) {
-        if (subroutineCall.prefixIsLower() || subroutineCall.prefixIsBlank()) {
-            return false;
-        }
-
-        ClassInfo classInfo = (ClassInfo) env.get(subroutineCall.getPrefixName());
-        Object subroutine = classInfo.get(subroutineCall.getSubroutineName());
-
+        Object subroutine = findSubroutine(subroutineCall, env);
         return subroutine instanceof NativeSubroutine;
-    }
-
-    private boolean subroutineIsConstructor(SubroutineCall subroutineCall, Environment env) {
-        if (subroutineCall.prefixIsLower()) {
-            return false;
-        }
-        else if (subroutineCall.prefixIsUpper()) {
-            if (!(env.get(subroutineCall.getPrefixName()) instanceof ClassInfo)) {
-                throw new Error("Unable to call the subroutine, the class name may has been used");
-            }
-
-            ClassInfo classInfo = (ClassInfo) env.get(subroutineCall.getPrefixName());
-            String subroutineName = subroutineCall.getSubroutineName();
-
-            if (!(classInfo.get(subroutineName) instanceof Subroutine)) {
-                throw new Error(
-                        "Unable to call the subroutine, the subroutine name may has been used");
-            }
-
-            Subroutine subroutine = (Subroutine) classInfo.get(subroutineName);
-            return subroutine.isConstructor();
-        }
-        else if (subroutineCall.prefixIsBlank()) {
-            String subroutineName = subroutineCall.getSubroutineName();
-
-            if (!(env.get(subroutineName) instanceof Subroutine)) {
-                throw new Error(
-                        "Unable to call the subroutine, the subroutine name may has been used");
-            }
-
-            Subroutine subroutine = (Subroutine) env.get(subroutineName);
-            return subroutine.isConstructor();
-        }
-        else {
-            throw new Error();
-        }
-    }
-
-    private boolean subroutineIsStatic(SubroutineCall subroutineCall, Environment env) {
-        if (subroutineCall.prefixIsLower()) {
-            return false;
-        }
-        else if (subroutineCall.prefixIsUpper()) {
-            if (!(env.get(subroutineCall.getPrefixName()) instanceof ClassInfo)) {
-                throw new Error("Unable to call the subroutine, the class name may has been used");
-            }
-
-            ClassInfo classInfo = (ClassInfo) env.get(subroutineCall.getPrefixName());
-            String subroutineName = subroutineCall.getSubroutineName();
-
-            if (!(classInfo.get(subroutineName) instanceof Subroutine)) {
-                throw new Error(
-                        "Unable to call the subroutine, the subroutine name may has been used");
-            }
-
-            Subroutine subroutine = (Subroutine) classInfo.get(subroutineName);
-            return subroutine.isStatic();
-        }
-        else if (subroutineCall.prefixIsBlank()) {
-            String subroutineName = subroutineCall.getSubroutineName();
-
-            if (!(env.get(subroutineName) instanceof Subroutine)) {
-                throw new Error("Unable to call the subroutine, the name may has been used");
-            }
-
-            Subroutine subroutine = (Subroutine) env.get(subroutineName);
-            return subroutine.isStatic();
-        }
-        else {
-            throw new Error();
-        }
     }
 
     private void pushArguments(List<Expression> args, List<Variable> paras, Environment env) {

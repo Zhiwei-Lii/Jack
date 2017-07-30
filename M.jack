@@ -15,6 +15,7 @@ class Main {
 	let array = Array.construct(3);
 	let array[0] = 2;
 	let charT = '3';
+	do Output.printLn(charT);
 	do Output.printLn(array[0]);
 	let abc = Input.readInt();
 	do Output.printLn(abc);
