@@ -14,5 +14,9 @@ public class StringLiteral extends Literal {
     public void setVal(String val) {
         this.val = val;
     }
+    
+    public String toString(){
+        return val;
+    }
 
 }

@@ -9,7 +9,12 @@ class Main {
 
     function void main() {
 	var Ball ball;
+	var int abc;
+	let abc = Input.readInt();
+	do Output.printLn(abc);
 	let ball = Ball.new();
+	
+	do Output.printLn(Math.abs(0-4));
       	return ball.getA();
     }
 
@@ -38,5 +43,14 @@ class Ball2 {
 
 	method int getA() {
 		return a;
+	}
+}
+
+class Math {
+	function int abs(int x){
+		if(x<0){
+			return (0-x);
+		}
+		return x;
 	}
 }

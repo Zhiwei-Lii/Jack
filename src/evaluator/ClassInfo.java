@@ -1,3 +1,4 @@
+package evaluator;
 import ast.Class;
 import ast.ClassVarDec;
 

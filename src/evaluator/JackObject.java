@@ -1,3 +1,4 @@
+package evaluator;
 import ast.Class;
 
 public class JackObject extends BasicEnv {

@@ -1,3 +1,5 @@
+package evaluator;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -59,6 +61,16 @@ public class Evaluator {
         }
 
         return null;
+    }
+
+    // use the java reflection
+    public Object eval(NativeSubroutine subroutine, Object[] args) {
+        try {
+            return subroutine.getMethod().invoke(null, args);
+        } catch (Exception e) {
+            throw new Error(
+                    "unable to invoke the nativeSubroutine " + subroutine.getSubroutineName());
+        }
     }
 
     public Object eval(ReturnStatement returnStatement, Environment env) throws ReturnValue {
@@ -224,12 +236,6 @@ public class Evaluator {
         return stringLiteral.getVal();
     }
 
-    /*
-     * 待改
-     */
-    private Environment getClassEnv(String className) {
-        return null;
-    }
 
     /**
      * 处理面向对象的调用 包括构造函数的调用 构造函数视作一般的静态函数处理, 但是要额外处理this(一般的静态调用不会有this) 放在运行时去判断是否是static 构造器很有意思,
@@ -237,6 +243,21 @@ public class Evaluator {
      * 
      */
     public Object eval(SubroutineCall subroutineCall, Environment env) {
+        if (isNative(subroutineCall, env)) {
+            ClassInfo classInfo = (ClassInfo) env.get(subroutineCall.getPrefixName());
+            NativeSubroutine nativeSubroutine =
+                    (NativeSubroutine) classInfo.get(subroutineCall.getSubroutineName());
+
+            Object[] args = new Object[subroutineCall.getArgs().size()];
+
+            for (int i = 0; i < subroutineCall.getArgs().size(); i++) {
+                Expression arg = subroutineCall.getArgs().get(i);
+                args[i] = eval(arg, env);
+            }
+
+            return eval(nativeSubroutine, args);
+        }
+
         boolean isStatic = subroutineIsStatic(subroutineCall, env);
         boolean isConstructor = subroutineIsConstructor(subroutineCall, env);
         boolean isMethod = !isStatic && !isConstructor;
@@ -277,10 +298,10 @@ public class Evaluator {
             localEnv = new BasicEnv(env);
         }
         else if (isMethod) {
-            if(subroutineCall.prefixIsBlank()){
+            if (subroutineCall.prefixIsBlank()) {
                 subroutineCall.setPrefixName("this");
             }
-            
+
             if (!(env.get(subroutineCall.getPrefixName()) instanceof JackObject)) {
                 throw new Error("unable to find the object " + subroutineCall.getPrefixName());
             }
@@ -291,7 +312,7 @@ public class Evaluator {
                 throw new Error(
                         "unable to find the subroutine " + subroutineCall.getSubroutineName());
             }
-            
+
             subroutine = (Subroutine) jackObject.get(subroutineCall.getSubroutineName());
             localEnv = new BasicEnv(jackObject);
         }
@@ -302,6 +323,17 @@ public class Evaluator {
         pushArguments(subroutineCall.getArgs(), subroutine.getParameters(), localEnv);
         Object returnValue = eval(subroutine, localEnv);
         return returnValue;
+    }
+
+    private boolean isNative(SubroutineCall subroutineCall, Environment env) {
+        if (subroutineCall.prefixIsLower() || subroutineCall.prefixIsBlank()) {
+            return false;
+        }
+
+        ClassInfo classInfo = (ClassInfo) env.get(subroutineCall.getPrefixName());
+        Object subroutine = classInfo.get(subroutineCall.getSubroutineName());
+
+        return subroutine instanceof NativeSubroutine;
     }
 
     private boolean subroutineIsConstructor(SubroutineCall subroutineCall, Environment env) {

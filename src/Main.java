@@ -1,5 +1,10 @@
 import java.io.FileNotFoundException;
 
+import evaluator.BasicEnv;
+import evaluator.Environment;
+import evaluator.Evaluator;
+import natives.Input;
+import natives.Output;
 import parser.CharStream;
 import parser.Lexer;
 import parser.Parser;
@@ -13,9 +18,14 @@ public class Main {
         TokenStream tokenStream = new TokenStream(lexer);
         Parser parser = new Parser(tokenStream);
         
-        //parser.parse();
         Environment topEnv = new BasicEnv();
+        registerNatives(topEnv);
         Evaluator v = new Evaluator(parser.parse(), topEnv);
+    }
+    
+    public static void registerNatives(Environment env){
+        Output.appendToEnv(env);
+        Input.appendToEnv(env);
     }
 
 }
