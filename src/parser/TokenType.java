@@ -6,6 +6,7 @@ public class TokenType {
     public static final int IDENTIFIER = 0;
     public static final int STRING_CONSTANT = 1;
     public static final int INTEGER_CONSTANT = 2;
+    public static final int CHAR_CONSTANT = 47;
 
     public static final int CLASS = 3;
     public static final int CONSTRUCTOR = 4;

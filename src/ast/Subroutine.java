@@ -8,10 +8,10 @@ public class Subroutine {
     String kind; // "constructor", "function", "method"
     Type type;
     String name;
-    List<Parameter> parameters;
+    List<Variable> parameters;
     List<Statement> body;
 
-    public Subroutine(String kind, Type type, String name, List<Parameter> parameters,
+    public Subroutine(String kind, Type type, String name, List<Variable> parameters,
             List<Statement> body) {
         this.kind = kind;
         this.type = type;
@@ -44,11 +44,11 @@ public class Subroutine {
         this.name = name;
     }
 
-    public List<Parameter> getParameters() {
+    public List<Variable> getParameters() {
         return parameters;
     }
 
-    public void setParameters(List<Parameter> parameters) {
+    public void setParameters(List<Variable> parameters) {
         this.parameters = parameters;
     }
 

@@ -5,11 +5,12 @@ import java.util.List;
 
 import ast.Class;
 import ast.ClassVarDec;
-import ast.Parameter;
 import ast.Subroutine;
 import ast.Type;
+import ast.Variable;
 import ast.expression.ArrayRef;
 import ast.expression.BinaryExpression;
+import ast.expression.CharLiteral;
 import ast.expression.Expression;
 import ast.expression.FalseLiteral;
 import ast.expression.IntegerLiteral;
@@ -216,6 +217,12 @@ public class Parser {
         return Integer.parseInt(image);
     }
 
+    private char charConstant() {
+        String image = tokenStream.currentToken().image();
+        tokenStream.consume();
+        return image.charAt(0);
+    }
+
     private boolean isArrayRef(){
         int lookaheadType = tokenStream.lookahead(1).type();
         return checkType(TokenType.IDENTIFIER) && lookaheadType == TokenType.LBRACK;
@@ -228,7 +235,7 @@ public class Parser {
     private boolean isExpression() {
         return checkType(TokenType.INTEGER_CONSTANT) || checkType(TokenType.STRING_CONSTANT)
                 || isKeywordConstant() || checkType(TokenType.IDENTIFIER)
-                || checkType(TokenType.LPAREN) || isUnaryOp();
+                || checkType(TokenType.LPAREN) || isUnaryOp() || checkType(TokenType.CHAR_CONSTANT);
     }
 
     private boolean isKeywordConstant() {
@@ -336,19 +343,19 @@ public class Parser {
         return op;
     }
 
-    private List<Parameter> parameterList() {
-        List<Parameter> paras = new ArrayList<Parameter>();
+    private List<Variable> parameterList() {
+        List<Variable> paras = new ArrayList<Variable>();
 
         if (isType()) {
             Type type = type();
             String name = varName();
-            paras.add(new Parameter(type, name));
+            paras.add(new Variable(type, name));
 
             while (checkType(TokenType.COMMA)) {
                 match(TokenType.COMMA);
                 type = type();
                 name = varName();
-                paras.add(new Parameter(type, name));
+                paras.add(new Variable(type, name));
             }
         }
 
@@ -452,7 +459,7 @@ public class Parser {
         String kind;
         Type type;
         String name;
-        List<Parameter> paras;
+        List<Variable> paras;
         List<Statement> body;
 
         kind = tokenStream.currentToken().image();
@@ -484,6 +491,10 @@ public class Parser {
         else if (checkType(TokenType.STRING_CONSTANT)) {
             String val = stringConstant();
             return new StringLiteral(val);
+        }
+        else if(checkType(TokenType.CHAR_CONSTANT)){
+            char val = charConstant();
+            return new CharLiteral(val);
         }
         else if (isKeywordConstant()) {
             return keywordConstant();

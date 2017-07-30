@@ -1,6 +1,6 @@
 package ast;
 
-public abstract class Variable {
+public class Variable {
     Type type;
     String varName;
 

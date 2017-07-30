@@ -6,8 +6,8 @@ import java.util.Stack;
 
 import ast.Class;
 import ast.ClassVarDec;
-import ast.Parameter;
 import ast.Subroutine;
+import ast.Variable;
 import ast.expression.*;
 import ast.statement.*;
 
@@ -426,7 +426,7 @@ public class Evaluator {
         }
     }
 
-    private void pushArguments(List<Expression> args, List<Parameter> paras, Environment env) {
+    private void pushArguments(List<Expression> args, List<Variable> paras, Environment env) {
         if (args.size() != paras.size()) {
             throw new Error("Unable to call the function");
         }
@@ -457,6 +457,10 @@ public class Evaluator {
         JackObject array = (JackObject) env.get(arrayName);
         return array.get(index + "");
     }
+    
+    public Object eval(CharLiteral charLiteral, Environment env){
+        return charLiteral.getVal();
+    }
 
     public Object eval(Expression e, Environment env) {
         if (e instanceof ArrayRef) {
@@ -470,6 +474,9 @@ public class Evaluator {
         }
         else if (e instanceof IntegerLiteral) {
             return eval((IntegerLiteral) e, env);
+        }
+        else if(e instanceof CharLiteral){
+            return eval((CharLiteral) e, env);
         }
         else if (e instanceof NullLiteral) {
             return eval((NullLiteral) e, env);

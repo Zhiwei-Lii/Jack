@@ -10,12 +10,15 @@ class Main {
     function void main() {
 	var Ball2 ball2;
 	var int abc;
+	var char charT;
 	var Array array;
 	let array = Array.construct(3);
 	let array[0] = 2;
+	let charT = '3';
 	do Output.printLn(array[0]);
 	let abc = Input.readInt();
 	do Output.printLn(abc);
+        do Output.printLn(charT);
 	let ball2 = Ball2.new();
 	
 	do Output.printLn(ball2.getA());

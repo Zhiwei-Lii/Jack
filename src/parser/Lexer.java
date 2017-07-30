@@ -46,6 +46,10 @@ public class Lexer {
             String image = stringConstant();
             return new Token(image, TokenType.STRING_CONSTANT);
         }
+        else if(charStream.current()=='\''){
+            String image = charConstant();
+            return new Token(image, TokenType.CHAR_CONSTANT);
+        }
         else if (charStream.isEOF()) {
             charStream.consume();
             return new Token("EOF", TokenType.EOF);
@@ -160,6 +164,14 @@ public class Lexer {
             System.out.println(charStream.current());
             throw new Error("Lexer::nextToken -> error");
         }
+    }
+
+    private String charConstant() {
+        charStream.consume();
+        String image = charStream.current()+"";
+        charStream.consume();
+        charStream.consume();
+        return image;
     }
 
     private String identifier() {

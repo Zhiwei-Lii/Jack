@@ -2,7 +2,7 @@ package ast;
 
 import java.util.List;
 
-public class Class extends Node {
+public class Class {
     String className;
     List<ClassVarDec> staticVars;
     List<ClassVarDec> fieldVars;
