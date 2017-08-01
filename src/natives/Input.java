@@ -11,7 +11,7 @@ import evaluator.NativeSubroutine;
 public class Input {
     public static StringLiteral readLn() {
         Scanner scanner = new Scanner(System.in);
-        String line = scanner.nextLine();
+        java.lang.String line = scanner.nextLine();
         return new StringLiteral(line);
     }
 
@@ -22,14 +22,14 @@ public class Input {
     }
 
     public static void appendToEnv(Environment env) {
-        ClassInfo classInfo = new ClassInfo(env, null);
+        ClassInfo classInfo = new ClassInfo(env, "Input", null);
 
         try {
-            NativeSubroutine readLn = new NativeSubroutine("readLn",
+            NativeSubroutine readLn = new NativeSubroutine(true, "readLn",
                     Input.class.getMethod("readLn"));
             classInfo.put("readLn", readLn);
 
-            NativeSubroutine readInt = new NativeSubroutine("readInt",
+            NativeSubroutine readInt = new NativeSubroutine(true, "readInt",
                     Input.class.getMethod("readInt"));
             classInfo.put("readInt", readInt);
         } catch (Exception e) {

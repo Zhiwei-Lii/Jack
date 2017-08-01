@@ -2,8 +2,8 @@ package ast.expression;
 
 public class CharLiteral extends Literal {
     char val;
-    
-    public CharLiteral(char val){
+
+    public CharLiteral(char val) {
         this.val = val;
     }
 
@@ -13,6 +13,10 @@ public class CharLiteral extends Literal {
 
     public void setVal(char val) {
         this.val = val;
+    }
+
+    public String toString() {
+        return val + "";
     }
 
 }

@@ -28,6 +28,7 @@ public class Main {
         Output.appendToEnv(env);
         Input.appendToEnv(env);
         Array.appendToEnv(env);
+        natives.String.appendToEnv(env);
     }
 
 }

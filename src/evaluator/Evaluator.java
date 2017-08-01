@@ -16,6 +16,8 @@ public class Evaluator {
      * 用于记录参数与局部变量的环境(subroutnie) -> object字段 -> 用于纪录字段与方法的环境(ClassInfo) -> 用于纪录全局变量的环境(name ->
      * ClassInfo)
      * 
+     * function与variable共用一个env, 所以不允许function和variable同名
+     * 
      */
 
     Environment topEnv;
@@ -33,7 +35,7 @@ public class Evaluator {
     }
 
     public void eval(Class cl, Environment topEnv) {
-        Environment classEnv = new ClassInfo(topEnv, cl);
+        Environment classEnv = new ClassInfo(topEnv, cl.getClassName(), cl);
 
         for (ClassVarDec classVarDec : cl.getStaticVars()) {
             classEnv.put(classVarDec.getVarName(), classVarDec);
@@ -61,10 +63,26 @@ public class Evaluator {
         return null;
     }
 
-    // use the java reflection
-    public Object eval(NativeSubroutine subroutine, Object[] args) {
+    // use the java reflection, static
+    public Object eval(NativeSubroutine subroutine, Object[] args){
         try {
             return subroutine.getMethod().invoke(null, args);
+        } catch (Exception e) {
+            System.out.println(e);
+            throw new Error(
+                    "unable to invoke the nativeSubroutine: " + subroutine.getSubroutineName());
+        }
+    }
+
+    public Object eval(NativeSubroutine subroutine, JackObject jackObject, Object[] args){
+        try {
+            Object[] newArgs = new Object[args.length+1];
+            newArgs[0] = jackObject;
+            for(int i=0; i<args.length; i++){
+                newArgs[i+1] = args[i];
+            }
+            
+            return subroutine.getMethod().invoke(null, newArgs);
         } catch (Exception e) {
             System.out.println(e);
             throw new Error(
@@ -251,7 +269,8 @@ public class Evaluator {
     }
 
     public Object eval(StringLiteral stringLiteral, Environment env) {
-        return stringLiteral.getVal();
+        JackObject stringObject = natives.String.construct(stringLiteral.getVal());
+        return stringObject;
     }
 
     //  这里可以加入更多错误处理
@@ -297,8 +316,14 @@ public class Evaluator {
                 Expression arg = subroutineCall.getArgs().get(i);
                 args[i] = eval(arg, env);
             }
+            
+            if(nativeSubroutine.isStatic()){
+                return eval(nativeSubroutine, args);
+            }
+            else{
+                return eval(nativeSubroutine, (JackObject)env.get(subroutineCall.getPrefixName()), args);
+            }
 
-            return eval(nativeSubroutine, args);
         }
 
         Subroutine subroutine = (Subroutine)findSubroutine(subroutineCall, env);

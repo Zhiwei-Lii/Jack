@@ -11,10 +11,10 @@ public class Output {
     }
 
     public static void appendToEnv(Environment env) {
-        ClassInfo classInfo = new ClassInfo(env, null);
+        ClassInfo classInfo = new ClassInfo(env, "Output", null);
 
         try {
-            NativeSubroutine printString = new NativeSubroutine("printLn",
+            NativeSubroutine printString = new NativeSubroutine(true, "printLn",
                     Output.class.getMethod("printLn", Object.class));
             classInfo.put("printLn", printString);
         } catch (Exception e) {

@@ -20,9 +20,11 @@ class Main {
 	let abc = Input.readInt();
 	do Output.printLn(abc);
         do Output.printLn(charT);
+	var String str;
+	let str = "hello! world!";
 	let ball2 = Ball2.new();
 	
-	do Output.printLn(ball2.getA());
+	do Output.printLn(str.charAt(0));
     }
 
 }

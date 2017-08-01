@@ -1,5 +1,4 @@
 package evaluator;
-import ast.Class;
 
 public class JackObject extends BasicEnv {
     
@@ -13,6 +12,13 @@ public class JackObject extends BasicEnv {
 
     public ClassInfo getClassInfo() {
         return (ClassInfo) this.outer;
+    }
+    
+    public String toString() {
+        if(getClassInfo().getClassName().equals("String")){
+            return (String) this.get("val");
+        }
+        return "JackObject";
     }
 
 }

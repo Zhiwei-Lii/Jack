@@ -1,24 +1,24 @@
 package natives;
 
-import ast.expression.IntegerLiteral;
 import evaluator.ClassInfo;
 import evaluator.Environment;
 import evaluator.JackObject;
 import evaluator.NativeSubroutine;
 
 public class Array {
+    static ClassInfo classInfo;
 
     public static JackObject construct (Integer integer) {
-        JackObject newArray = new JackObject();
+        JackObject newArray = new JackObject(classInfo);
         newArray.put("size", integer);
         return newArray;
     }
 
     public static void appendToEnv(Environment env) {
-        ClassInfo classInfo = new ClassInfo(env, null);
+        classInfo = new ClassInfo(env, "Array", null);
 
         try {
-            NativeSubroutine construct = new NativeSubroutine("construct",
+            NativeSubroutine construct = new NativeSubroutine(true, "construct",
                     Array.class.getMethod("construct", Integer.class));
             classInfo.put("construct", construct);
         } catch (Exception e) {

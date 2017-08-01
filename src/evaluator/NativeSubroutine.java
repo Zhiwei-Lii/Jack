@@ -3,12 +3,18 @@ package evaluator;
 import java.lang.reflect.Method;
 
 public class NativeSubroutine {
+    boolean isStatic;
     String subroutineName;
     Method method;
     
-    public NativeSubroutine(String subroutineName, Method method){
+    public NativeSubroutine(boolean isStatic, String subroutineName, Method method){
+        this.isStatic = isStatic;
         this.subroutineName = subroutineName;
         this.method = method;
+    }
+    
+    public boolean isStatic() {
+        return isStatic;
     }
     
     public Method getMethod(){
