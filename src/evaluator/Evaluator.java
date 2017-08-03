@@ -4,11 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ast.Class;
+import ast.ClassFile;
 import ast.ClassVarDec;
 import ast.Subroutine;
 import ast.Variable;
 import ast.expression.*;
 import ast.statement.*;
+import parser.CharStream;
+import parser.Lexer;
+import parser.Parser;
+import parser.TokenStream;
+import ast.ImportDec;
 
 public class Evaluator {
 
@@ -22,15 +28,45 @@ public class Evaluator {
 
     Environment topEnv;
 
-    public Evaluator(List<Class> classList, Environment topEnv) {
-        eval(classList, topEnv);
+    public Evaluator(ClassFile classFile, Environment topEnv) {
+        for (ImportDec importDec : classFile.getImportDecList()) {
+            eval(importDec, topEnv);
+        }
+
+        for (Class cl : classFile.getClassDecList()) {
+            eval(cl, topEnv);
+        }
+        
+        evalMainSubroutine(topEnv);
+    }
+    
+    public void evalMainSubroutine(Environment topEnv){
         SubroutineCall mainCall = new SubroutineCall("Main", "main", new ArrayList());
         Object returnValue = eval(mainCall, (Environment) topEnv.get("Main"));
     }
 
-    public void eval(List<Class> classList, Environment topEnv) {
-        for (Class cl : classList) {
-            eval(cl, topEnv);
+    // load class
+    public void eval(ImportDec importList, Environment topEnv) {
+        String classPath = importList.getClassPath();
+
+        try {
+            CharStream charStream = new CharStream(classPath);
+            Lexer lexer = new Lexer(charStream);
+            TokenStream tokenStream = new TokenStream(lexer);
+            Parser parser = new Parser(tokenStream);
+            
+            ClassFile classFile = parser.parse();
+            
+            for (ImportDec importDec : classFile.getImportDecList()) {
+                eval(importDec, topEnv);
+            }
+
+            for (Class cl : classFile.getClassDecList()) {
+                eval(cl, topEnv);
+            }
+            
+        } catch (Exception e) {
+            System.out.println(e);
         }
     }
 
@@ -46,7 +82,7 @@ public class Evaluator {
         }
 
         classEnv.put("", classEnv); // 为了f()的调用
-
+        
         topEnv.put(cl.getClassName(), classEnv);
     }
 
@@ -64,7 +100,7 @@ public class Evaluator {
     }
 
     // use the java reflection, static
-    public Object eval(NativeSubroutine subroutine, Object[] args){
+    public Object eval(NativeSubroutine subroutine, Object[] args) {
         try {
             return subroutine.getMethod().invoke(null, args);
         } catch (Exception e) {
@@ -74,14 +110,14 @@ public class Evaluator {
         }
     }
 
-    public Object eval(NativeSubroutine subroutine, JackObject jackObject, Object[] args){
+    public Object eval(NativeSubroutine subroutine, JackObject jackObject, Object[] args) {
         try {
-            Object[] newArgs = new Object[args.length+1];
+            Object[] newArgs = new Object[args.length + 1];
             newArgs[0] = jackObject;
-            for(int i=0; i<args.length; i++){
-                newArgs[i+1] = args[i];
+            for (int i = 0; i < args.length; i++) {
+                newArgs[i + 1] = args[i];
             }
-            
+
             return subroutine.getMethod().invoke(null, newArgs);
         } catch (Exception e) {
             System.out.println(e);
@@ -273,10 +309,10 @@ public class Evaluator {
         return stringObject;
     }
 
-    //  这里可以加入更多错误处理
-    private Object findSubroutine(SubroutineCall subroutineCall, Environment env){
+    // 这里可以加入更多错误处理
+    private Object findSubroutine(SubroutineCall subroutineCall, Environment env) {
 
-        if(subroutineCall.prefixIsBlank()){
+        if (subroutineCall.prefixIsBlank()) {
             String subroutineName = subroutineCall.getSubroutineName();
 
             if (!(env.get(subroutineName) instanceof Subroutine)) {
@@ -286,18 +322,18 @@ public class Evaluator {
             Object subroutine = (Subroutine) env.get(subroutineName);
             return subroutine;
         }
-        else if(subroutineCall.prefixIsLower()){
+        else if (subroutineCall.prefixIsLower()) {
             JackObject jackObject = (JackObject) env.get(subroutineCall.getPrefixName());
             ClassInfo classInfo = (ClassInfo) jackObject.getClassInfo();
             Object subroutine = classInfo.get(subroutineCall.getSubroutineName());
             return subroutine;
         }
-        else if(subroutineCall.prefixIsUpper()){
+        else if (subroutineCall.prefixIsUpper()) {
             ClassInfo classInfo = (ClassInfo) env.get(subroutineCall.getPrefixName());
             Object subroutine = classInfo.get(subroutineCall.getSubroutineName());
             return subroutine;
         }
-        
+
         return null;
     }
 
@@ -308,7 +344,8 @@ public class Evaluator {
      */
     public Object eval(SubroutineCall subroutineCall, Environment env) {
         if (isNative(subroutineCall, env)) {
-            NativeSubroutine nativeSubroutine = (NativeSubroutine) findSubroutine(subroutineCall, env);
+            NativeSubroutine nativeSubroutine =
+                    (NativeSubroutine) findSubroutine(subroutineCall, env);
 
             Object[] args = new Object[subroutineCall.getArgs().size()];
 
@@ -316,17 +353,18 @@ public class Evaluator {
                 Expression arg = subroutineCall.getArgs().get(i);
                 args[i] = eval(arg, env);
             }
-            
-            if(nativeSubroutine.isStatic()){
+
+            if (nativeSubroutine.isStatic()) {
                 return eval(nativeSubroutine, args);
             }
-            else{
-                return eval(nativeSubroutine, (JackObject)env.get(subroutineCall.getPrefixName()), args);
+            else {
+                return eval(nativeSubroutine, (JackObject) env.get(subroutineCall.getPrefixName()),
+                        args);
             }
 
         }
 
-        Subroutine subroutine = (Subroutine)findSubroutine(subroutineCall, env);
+        Subroutine subroutine = (Subroutine) findSubroutine(subroutineCall, env);
 
         Environment localEnv = null;
 
@@ -411,8 +449,8 @@ public class Evaluator {
         JackObject array = (JackObject) env.get(arrayName);
         return array.get(index + "");
     }
-    
-    public Object eval(CharLiteral charLiteral, Environment env){
+
+    public Object eval(CharLiteral charLiteral, Environment env) {
         return charLiteral.getVal();
     }
 
@@ -429,7 +467,7 @@ public class Evaluator {
         else if (e instanceof IntegerLiteral) {
             return eval((IntegerLiteral) e, env);
         }
-        else if(e instanceof CharLiteral){
+        else if (e instanceof CharLiteral) {
             return eval((CharLiteral) e, env);
         }
         else if (e instanceof NullLiteral) {
@@ -452,6 +490,9 @@ public class Evaluator {
         }
         else if (e instanceof UnaryExpression) {
             return eval((UnaryExpression) e, env);
+        }
+        else if (e == null) {
+            return null;
         }
         else {
             throw new Error();

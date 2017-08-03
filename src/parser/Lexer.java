@@ -27,142 +27,143 @@ public class Lexer {
             }
         }
 
+        int lineNo = charStream.getLineNo();
+
         if (isLetter() || charStream.current() == '_') {
             String image = identifier();
 
             if (isKeyword(image)) {
-                return new Token(image, keywordType(image));
+                return new Token(image, keywordType(image), lineNo);
             }
             else {
-                return new Token(image, TokenType.IDENTIFIER);
+                return new Token(image, TokenType.IDENTIFIER, lineNo);
             }
         }
         else if (isDigit()) {
             String image = integerConstant();
-            return new Token(image, TokenType.INTEGER_CONSTANT);
+            return new Token(image, TokenType.INTEGER_CONSTANT, lineNo);
 
         }
         else if (isString()) {
             String image = stringConstant();
-            return new Token(image, TokenType.STRING_CONSTANT);
+            return new Token(image, TokenType.STRING_CONSTANT, lineNo);
         }
         else if(charStream.current()=='\''){
             String image = charConstant();
-            return new Token(image, TokenType.CHAR_CONSTANT);
+            return new Token(image, TokenType.CHAR_CONSTANT, lineNo);
         }
         else if (charStream.isEOF()) {
             charStream.consume();
-            return new Token("EOF", TokenType.EOF);
+            return new Token("EOF", TokenType.EOF, lineNo);
         }
         else if (charStream.current() == '(') {
             charStream.consume();
-            return new Token("(", TokenType.LPAREN);
+            return new Token("(", TokenType.LPAREN, lineNo);
         }
         else if (charStream.current() == ')') {
             charStream.consume();
-            return new Token(")", TokenType.RPAREN);
+            return new Token(")", TokenType.RPAREN, lineNo);
         }
         else if (charStream.current() == '{') {
             charStream.consume();
-            return new Token("{", TokenType.LCURLY);
+            return new Token("{", TokenType.LCURLY, lineNo);
         }
         else if (charStream.current() == '}') {
             charStream.consume();
-            return new Token("}", TokenType.RCURLY);
+            return new Token("}", TokenType.RCURLY, lineNo);
         }
         else if (charStream.current() == '[') {
             charStream.consume();
-            return new Token("[", TokenType.LBRACK);
+            return new Token("[", TokenType.LBRACK, lineNo);
         }
         else if (charStream.current() == ']') {
             charStream.consume();
-            return new Token("]", TokenType.RBRACK);
+            return new Token("]", TokenType.RBRACK, lineNo);
         }
         else if (charStream.current() == '.') {
             charStream.consume();
-            return new Token(".", TokenType.DOT);
+            return new Token(".", TokenType.DOT, lineNo);
         }
         else if (charStream.current() == ',') {
             charStream.consume();
-            return new Token(",", TokenType.COMMA);
+            return new Token(",", TokenType.COMMA, lineNo);
         }
         else if (charStream.current() == ';') {
             charStream.consume();
-            return new Token(";", TokenType.SEMI);
+            return new Token(";", TokenType.SEMI, lineNo);
         }
         else if (charStream.current() == '+') {
             charStream.consume();
-            return new Token("+", TokenType.PLUS);
+            return new Token("+", TokenType.PLUS, lineNo);
         }
         else if (charStream.current() == '-') {
             charStream.consume();
-            return new Token("-", TokenType.MINUS);
+            return new Token("-", TokenType.MINUS, lineNo);
         }
         else if (charStream.current() == '*') {
             charStream.consume();
-            return new Token("*", TokenType.STAR);
+            return new Token("*", TokenType.STAR, lineNo);
         }
         else if (charStream.current() == '/') {
             charStream.consume();
-            return new Token("/", TokenType.DIV);
+            return new Token("/", TokenType.DIV, lineNo);
         }
         else if (charStream.current() == '&' && charStream.lookAhead(1) == '&') {
             charStream.consume();
             charStream.consume();
-            return new Token("&", TokenType.AND);
+            return new Token("&", TokenType.AND, lineNo);
         }
         else if (charStream.current() == '&') {
             charStream.consume();
-            return new Token("&", TokenType.AND);
+            return new Token("&", TokenType.AND, lineNo);
         }
         else if (charStream.current() == '|' && charStream.lookAhead(1) == '|') {
             charStream.consume();
             charStream.consume();
-            return new Token("|", TokenType.OR);
+            return new Token("|", TokenType.OR, lineNo);
         }
         else if (charStream.current() == '|') {
             charStream.consume();
-            return new Token("|", TokenType.OR);
+            return new Token("|", TokenType.OR, lineNo);
         }
         else if (charStream.current() == '<') {
             charStream.consume();
-            return new Token("<", TokenType.LT);
+            return new Token("<", TokenType.LT, lineNo);
         }
         else if (charStream.current() == '<' && charStream.lookAhead(1) == '=') {
             charStream.consume();
             charStream.consume();
-            return new Token("<=", TokenType.LE);
+            return new Token("<=", TokenType.LE, lineNo);
         }
         else if (charStream.current() == '>') {
             charStream.consume();
-            return new Token(">", TokenType.GT);
+            return new Token(">", TokenType.GT, lineNo);
         }
         else if (charStream.current() == '>' && charStream.lookAhead(1) == '=') {
             charStream.consume();
             charStream.consume();
-            return new Token(">=", TokenType.GE);
+            return new Token(">=", TokenType.GE, lineNo);
         }
         else if (charStream.current() == '=' && charStream.lookAhead(1) == '=') {
             charStream.consume();
             charStream.consume();
-            return new Token("==", TokenType.EQ);
+            return new Token("==", TokenType.EQ, lineNo);
         }
         else if (charStream.current() == '=') {
             charStream.consume();
-            return new Token("=", TokenType.ASSIGN);
+            return new Token("=", TokenType.ASSIGN, lineNo);
         }
         else if (charStream.current() == '!' && charStream.lookAhead(1) == '=') {
             charStream.consume();
             charStream.consume();
-            return new Token("!=", TokenType.NE);
+            return new Token("!=", TokenType.NE, lineNo);
         }
         else if (charStream.current() == '~') {
             charStream.consume();
-            return new Token("~", TokenType.NEG);
+            return new Token("~", TokenType.NEG, lineNo);
         }
         else {
-            System.out.println(charStream.current());
-            throw new Error("Lexer::nextToken -> error");
+            throw new Error("illegal token at line " + lineNo);
         }
     }
 
@@ -213,6 +214,7 @@ public class Lexer {
         keywords.put("else", TokenType.ELSE);
         keywords.put("while", TokenType.WHILE);
         keywords.put("return", TokenType.RETURN);
+        keywords.put("import", TokenType.IMPORT);
     }
 
     private String integerConstant() {

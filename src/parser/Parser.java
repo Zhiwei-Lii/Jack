@@ -28,6 +28,8 @@ import ast.statement.ReturnStatement;
 import ast.statement.Statement;
 import ast.statement.VarStatement;
 import ast.statement.WhileStatement;
+import ast.ImportDec;
+import ast.ClassFile;
 
 public class Parser {
     TokenStream tokenStream;
@@ -36,14 +38,42 @@ public class Parser {
         this.tokenStream = tokenStream;
     }
 
-    public List<Class> parse() {
-        return classDecList();
+    public ClassFile parse() {
+        List<ImportDec> importDecList = importDecList();
+        List<Class> classDecList = classDecList();
+        return new ClassFile(importDecList, classDecList);
     }
     
-    private Expression arrayRef(){
+    private List<ImportDec> importDecList() {
+        List<ImportDec> importDecList = new ArrayList<ImportDec>();
+        while(isImportDec()){
+            match(TokenType.IMPORT);
+            importDecList.add(new ImportDec(filePath()));
+            match(TokenType.SEMI);
+        }
+
+        return importDecList;
+    }
+    
+    private boolean isImportDec() {
+        return checkType(TokenType.IMPORT);
+    }
+    
+    private String filePath() {
+        String filePath = "";
+
+        while(!checkType(TokenType.SEMI)){
+            filePath += tokenStream.currentToken().image();
+            tokenStream.consume();
+        }
+        
+        return filePath;
+    }
+
+    private Expression arrayRef() {
         String arrayName;
         Expression index;
-        
+
         arrayName = IDENTIFIER();
         match(TokenType.LBRACK);
         index = expression();
@@ -73,10 +103,10 @@ public class Parser {
         while (isClassVarDec()) {
             List<ClassVarDec> list = classVarDec();
 
-            if(list.get(0).isStatic()){
+            if (list.get(0).isStatic()) {
                 staticVars.addAll(list);
             }
-            else{
+            else {
                 fieldVars.addAll(list);
             }
         }
@@ -89,14 +119,14 @@ public class Parser {
 
         return new Class(className, staticVars, fieldVars, subroutines);
     }
-    
+
     private List<Class> classDecList() {
         List<Class> list = new ArrayList<Class>();
-        while(tokenStream.currentToken().type()!=TokenType.EOF){
+        while (tokenStream.currentToken().type() != TokenType.EOF) {
             Class cl = classDec();
             list.add(cl);
         }
-        
+
         return list;
     }
 
@@ -177,7 +207,7 @@ public class Parser {
 
     private String IDENTIFIER() {
         if (!checkType(TokenType.IDENTIFIER)) {
-            throw new Error("parse error!");
+            throw new Error("syntax error at line " + tokenStream.currentToken().getLineNo());
         }
 
         Token token = tokenStream.currentToken();
@@ -223,7 +253,7 @@ public class Parser {
         return image.charAt(0);
     }
 
-    private boolean isArrayRef(){
+    private boolean isArrayRef() {
         int lookaheadType = tokenStream.lookahead(1).type();
         return checkType(TokenType.IDENTIFIER) && lookaheadType == TokenType.LBRACK;
     }
@@ -278,7 +308,7 @@ public class Parser {
         return checkType(TokenType.IDENTIFIER) && lookaheadType != TokenType.LBRACK
                 && lookaheadType != TokenType.LPAREN && lookaheadType != TokenType.DOT;
     }
-    
+
     private Expression keywordConstant() {
 
         if (checkType(TokenType.TRUE)) {
@@ -298,7 +328,7 @@ public class Parser {
             return new ThisLiteral();
         }
         else {
-            throw new Error("syntax error");
+            throw new Error("syntax error at line" + tokenStream.currentToken().getLineNo());
         }
 
     }
@@ -310,13 +340,13 @@ public class Parser {
 
         match(TokenType.LET);
         varName = IDENTIFIER();
-        
-        if(checkType(TokenType.LBRACK)){
+
+        if (checkType(TokenType.LBRACK)) {
             match(TokenType.LBRACK);
             index = expression();
             match(TokenType.RBRACK);
         }
-        
+
         match(TokenType.ASSIGN);
         value = expression();
         match(TokenType.SEMI);
@@ -326,16 +356,33 @@ public class Parser {
 
     private void match(int tokenType) {
         if (!checkType(tokenType)) {
-            throw new Error("Except TokenType -> " + tokenType + "Receive TokenType ->"
-                    + tokenStream.currentToken().type());
+            throw new Error("\n"+"syntax error at line " + tokenStream.currentToken().getLineNo() + "\n"
+                    + "Except " + searchTokenName(tokenType) + "\n" + "Receive "
+                    + searchTokenName(tokenStream.currentToken().type()));
         }
 
         tokenStream.consume();
     }
 
+    private String searchTokenName(int tokenType) {
+        try {
+            java.lang.Class tokenTypeClass = java.lang.Class.forName("parser.TokenType");
+
+            for (java.lang.reflect.Field field : tokenTypeClass.getDeclaredFields()) {
+                if (field.getInt(null) == tokenType) {
+                    return field.getName();
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        throw new Error("unfound tokenType");
+    }
+
     private String op() {
-        if (!isBinOp()&&!isUnaryOp()) {
-            throw new Error("Parser:: op");
+        if (!isBinOp() && !isUnaryOp()) {
+            throw new Error("syntax error at line" + tokenStream.currentToken().getLineNo());
         }
 
         String op = tokenStream.currentToken().image();
@@ -401,17 +448,17 @@ public class Parser {
             return varStatement();
         }
         else {
-            throw new Error("...");
+            throw new Error("syntax error at line" + tokenStream.currentToken().getLineNo());
         }
     }
-    
-    private boolean isUnaryOp(){
+
+    private boolean isUnaryOp() {
         return checkType(TokenType.NEG) || checkType(TokenType.MINUS);
     }
 
     private List<Statement> statements() {
         List<Statement> body = new ArrayList<Statement>();
-        
+
         while (isStatement()) {
             body.add(statement());
         }
@@ -442,7 +489,7 @@ public class Parser {
 
         int lookaheadType = tokenStream.lookahead(1).type();
 
-        if(lookaheadType==TokenType.DOT){
+        if (lookaheadType == TokenType.DOT) {
             prefixName = IDENTIFIER();
             match(TokenType.DOT);
         }
@@ -492,7 +539,7 @@ public class Parser {
             String val = stringConstant();
             return new StringLiteral(val);
         }
-        else if(checkType(TokenType.CHAR_CONSTANT)){
+        else if (checkType(TokenType.CHAR_CONSTANT)) {
             char val = charConstant();
             return new CharLiteral(val);
         }
@@ -502,7 +549,7 @@ public class Parser {
         else if (isVarName()) {
             return new VarName(IDENTIFIER());
         }
-        else if(isArrayRef()){
+        else if (isArrayRef()) {
             return arrayRef();
         }
         else if (isSubroutineCall()) {
@@ -517,12 +564,12 @@ public class Parser {
 
             return expr;
         }
-        else if(isUnaryOp()){
+        else if (isUnaryOp()) {
             String op = op();
             return new UnaryExpression(op, term());
         }
         else {
-            throw new Error("syntax error!");
+            throw new Error("syntax error at line" + tokenStream.currentToken().getLineNo());
         }
     }
 

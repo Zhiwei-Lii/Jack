@@ -1,0 +1,22 @@
+class Stack {
+    field Array stack;
+    field int size;
+
+    constructor Stack new() {
+        let stack = Array.construct(10);
+        let size = 0;
+        return this;
+    }
+
+    method void push(JackObject jackObject){
+        let stack[size] = jackObject;
+        let size = size + 1;
+    }
+
+    method JackObject pop(){
+        var JackObject object;
+        let object = stack[size-1];
+        let size = size - 1;
+        return object;
+    }
+}

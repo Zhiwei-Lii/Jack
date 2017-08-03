@@ -29,6 +29,7 @@ public class TokenType {
     public static final int ELSE = 21;
     public static final int WHILE = 22;
     public static final int RETURN = 23;
+    public static final int IMPORT = 48;
 
     public static final int LCURLY = 24; // '{'
     public static final int RCURLY = 25; // '}'

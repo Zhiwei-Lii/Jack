@@ -5,48 +5,18 @@
 
 // (derived from projects/09/Square/Main.jack, with testing additions)
 
+import ./Stack.jack;
+
 class Main {
 
     function void main() {
-	var Ball2 ball2;
-	var int abc;
-	var char charT;
-	var Array array;
-	let array = Array.construct(3);
-	let array[0] = 2;
-	let charT = '3';
-	do Output.printLn(charT);
-	do Output.printLn(array[0]);
-	let abc = Input.readInt();
-	do Output.printLn(abc);
-        do Output.printLn(charT);
-	var String str;
-	let str = "hello! world!";
-	let ball2 = Ball2.new();
-	
-	do Output.printLn(str.charAt(0));
+	var Stack stack;
+	let stack = Stack.new();
+	do stack.push("hello");
+	do stack.push("world");
+	do stack.push(1);
+	do Output.printLn(stack.pop());
+	return;
     }
 
-}
-
-class Ball2 {
-	field int a;
-
-	constructor Ball2 new() {
-		let a = 5+4;
-		return this;
-	}
-
-	method int getA() {
-		return a;
-	}
-}
-
-class Math {
-	function int abs(int x){
-		if(x<0){
-			return (0-x);
-		}
-		return x;
-	}
 }

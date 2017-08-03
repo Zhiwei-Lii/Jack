@@ -13,6 +13,7 @@ public class CharStream {
     private Reader reader;
     private List<Character> buffer;
     private int pointer = 0;
+    private int lineNo = 0;
 
     public CharStream(String fileName) throws FileNotFoundException {
         File file = new File(fileName);
@@ -33,11 +34,18 @@ public class CharStream {
     }
 
     public void consume() {
+        if(current()=='\n'){
+            lineNo++;
+        }
         pointer++;
     }
 
     public char current() {
         return buffer.get(pointer);
+    }
+    
+    public int getLineNo() {
+        return lineNo;
     }
 
     public boolean isEOF() {
