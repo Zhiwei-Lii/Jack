@@ -24,6 +24,8 @@ public class Evaluator {
      * 
      * function与variable共用一个env, 所以不允许function和variable同名
      * 
+     * 黑魔法: 对于f()的调用, ""->映射成classInfo, 就可以从中搜索了, 相关函数findSubroutine, eval subroutineCall, 待修改
+     * 
      */
 
     Environment topEnv;
@@ -309,26 +311,16 @@ public class Evaluator {
         return stringObject;
     }
 
-    // 这里可以加入更多错误处理
+    // 这里可以加入更多错误处理, ""被映射成了自身
     private Object findSubroutine(SubroutineCall subroutineCall, Environment env) {
 
-        if (subroutineCall.prefixIsBlank()) {
-            String subroutineName = subroutineCall.getSubroutineName();
-
-            if (!(env.get(subroutineName) instanceof Subroutine)) {
-                throw new Error("Unable to call the subroutine, the name may has been used");
-            }
-
-            Object subroutine = (Subroutine) env.get(subroutineName);
-            return subroutine;
-        }
-        else if (subroutineCall.prefixIsLower()) {
+        if (subroutineCall.prefixIsLower()) {
             JackObject jackObject = (JackObject) env.get(subroutineCall.getPrefixName());
             ClassInfo classInfo = (ClassInfo) jackObject.getClassInfo();
             Object subroutine = classInfo.get(subroutineCall.getSubroutineName());
             return subroutine;
         }
-        else if (subroutineCall.prefixIsUpper()) {
+        else if (subroutineCall.prefixIsUpper()||subroutineCall.prefixIsBlank()) {
             ClassInfo classInfo = (ClassInfo) env.get(subroutineCall.getPrefixName());
             Object subroutine = classInfo.get(subroutineCall.getSubroutineName());
             return subroutine;
@@ -383,8 +375,12 @@ public class Evaluator {
             if (!(env.get(subroutineCall.getPrefixName()) instanceof ClassInfo)) {
                 throw new Error("unable to find the class " + subroutineCall.getPrefixName());
             }
-
+            
             localEnv = new BasicEnv(env);
+
+            // 为了f()调用的黑魔法
+            ClassInfo classInfo = (ClassInfo) env.get(subroutineCall.getPrefixName()); 
+            localEnv.put("", classInfo); 
         }
         else if (subroutine.isMethod()) {
             if (subroutineCall.prefixIsBlank()) {

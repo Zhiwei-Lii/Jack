@@ -7,7 +7,6 @@ public class SubroutineCall extends Expression {
     String prefixName;
     String subroutineName;
 
-    // when detail with f(), the prefixName is ""(blank). in the classInfo environment, ""(blank) is mapped to classInfo.
     public SubroutineCall(String prefixName, String subroutineName, List<Expression> args) {
         this.args = args;
         this.prefixName = prefixName;

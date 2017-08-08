@@ -3,7 +3,7 @@ class Stack {
     field int size;
 
     constructor Stack new() {
-        let stack = Array.construct(10);
+        let stack = Array.new(10);
         let size = 0;
         return this;
     }

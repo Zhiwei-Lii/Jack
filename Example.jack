@@ -1,0 +1,91 @@
+// display the usage of Jack
+import ./src/lib/Stack.jack; // the path of other class  
+
+class Main {
+
+    function void main() {
+        do testStack();
+        do Output.printLn("-----------");
+
+        do testArray();
+        do Output.printLn("-----------");
+
+        do testObject();
+        do Output.printLn("-----------");
+
+        do Output.printLn(Fib.fib(5));
+
+	return;
+    }
+
+    function void testStack() {
+        var Stack stack; 
+        let stack = Stack.new();
+
+        do stack.push(1);
+        do stack.push(2);
+
+        do Output.printLn("The top of stack is: ");
+        do Output.printLn(stack.pop());
+
+        return;
+    }
+
+    function void testArray() {
+        var Array array;
+        var int length;
+
+        let length = 3;
+        let array = Array.new(length);
+
+        var int i;
+        let i = 0;
+
+        do Output.printLn("print the value of array");
+
+        while(i < length) {
+            let array[i] = i;
+            do Output.printLn(array[i]);
+	    let i = i + 1;
+        }
+
+        return;
+    }
+
+    function void testObject() {
+        var Hello h;
+        let h = Hello.new(10);
+        do Output.printLn(h.hello());
+    }
+
+}
+
+class Fib {
+    function int fib(int i){
+        if(i==1) {
+            return 1;
+        }
+
+        return i*fib(i-1);
+    }
+}
+
+class Hello {
+    field int i;
+
+    constructor Hello new(int v) {
+        let i = v;
+        return this;
+    }
+
+    method int hello() {
+        if(i==1) {
+            return 1;
+        }
+
+        let i = i-1;
+
+        return hello();
+    }
+}
+

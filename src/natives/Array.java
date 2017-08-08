@@ -18,9 +18,9 @@ public class Array {
         classInfo = new ClassInfo(env, "Array", null);
 
         try {
-            NativeSubroutine construct = new NativeSubroutine(true, "construct",
+            NativeSubroutine construct = new NativeSubroutine(true, "new",
                     Array.class.getMethod("construct", Integer.class));
-            classInfo.put("construct", construct);
+            classInfo.put("new", construct);
         } catch (Exception e) {
             throw new Error("unable to append the native method");
         }
