@@ -13,7 +13,7 @@ public class CharStream {
     private Reader reader;
     private List<Character> buffer;
     private int pointer = 0;
-    private int lineNo = 0;
+    private int lineNo = 1;
 
     public CharStream(String fileName) throws FileNotFoundException {
         File file = new File(fileName);

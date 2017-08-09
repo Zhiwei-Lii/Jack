@@ -25,7 +25,7 @@ public class Evaluator {
      * function与variable共用一个env, 所以不允许function和variable同名
      * 
      * 黑魔法: 对于f()的调用, ""->映射成classInfo, 就可以从中搜索了, 相关函数findSubroutine, eval subroutineCall, 待修改
-     * 
+     * 名字可以换成大写的"This"  模仿method的解决方案
      */
 
     Environment topEnv;
@@ -83,7 +83,7 @@ public class Evaluator {
             classEnv.put(subroutine.getName(), subroutine);
         }
 
-        classEnv.put("", classEnv); // 为了f()的调用
+        classEnv.put("This", classEnv); // 为了f()的调用
         
         topEnv.put(cl.getClassName(), classEnv);
     }
@@ -311,16 +311,19 @@ public class Evaluator {
         return stringObject;
     }
 
-    // 这里可以加入更多错误处理, ""被映射成了自身
     private Object findSubroutine(SubroutineCall subroutineCall, Environment env) {
-
-        if (subroutineCall.prefixIsLower()) {
+        if(subroutineCall.prefixIsBlank()){
+            ClassInfo classInfo = (ClassInfo) env.get("This");
+            Object subroutine = classInfo.get(subroutineCall.getSubroutineName());
+            return subroutine;
+        }
+        else if (subroutineCall.prefixIsLower()) {
             JackObject jackObject = (JackObject) env.get(subroutineCall.getPrefixName());
             ClassInfo classInfo = (ClassInfo) jackObject.getClassInfo();
             Object subroutine = classInfo.get(subroutineCall.getSubroutineName());
             return subroutine;
         }
-        else if (subroutineCall.prefixIsUpper()||subroutineCall.prefixIsBlank()) {
+        else if (subroutineCall.prefixIsUpper()){
             ClassInfo classInfo = (ClassInfo) env.get(subroutineCall.getPrefixName());
             Object subroutine = classInfo.get(subroutineCall.getSubroutineName());
             return subroutine;
@@ -372,15 +375,16 @@ public class Evaluator {
             localEnv = new BasicEnv(jackObject);
         }
         else if (subroutine.isStatic()) {
+            if (subroutineCall.prefixIsBlank()) {
+                subroutineCall.setPrefixName("This");
+            }
+
             if (!(env.get(subroutineCall.getPrefixName()) instanceof ClassInfo)) {
                 throw new Error("unable to find the class " + subroutineCall.getPrefixName());
             }
             
-            localEnv = new BasicEnv(env);
-
-            // 为了f()调用的黑魔法
             ClassInfo classInfo = (ClassInfo) env.get(subroutineCall.getPrefixName()); 
-            localEnv.put("", classInfo); 
+            localEnv = new BasicEnv(classInfo);
         }
         else if (subroutine.isMethod()) {
             if (subroutineCall.prefixIsBlank()) {
@@ -404,7 +408,7 @@ public class Evaluator {
             throw new Error();
         }
 
-        pushArguments(subroutineCall.getArgs(), subroutine.getParameters(), localEnv);
+        pushArguments(subroutineCall.getArgs(), subroutine.getParameters(), env, localEnv);
         Object returnValue = eval(subroutine, localEnv);
         return returnValue;
     }
@@ -414,7 +418,7 @@ public class Evaluator {
         return subroutine instanceof NativeSubroutine;
     }
 
-    private void pushArguments(List<Expression> args, List<Variable> paras, Environment env) {
+    private void pushArguments(List<Expression> args, List<Variable> paras, Environment env, Environment newEnv) {
         if (args.size() != paras.size()) {
             throw new Error("Unable to call the function");
         }
@@ -422,7 +426,7 @@ public class Evaluator {
         for (int i = 0; i < args.size(); i++) {
             Object value = eval(args.get(i), env);
             String name = paras.get(i).getVarName();
-            env.put(name, value);
+            newEnv.put(name, value);
         }
     }
 

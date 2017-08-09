@@ -59,14 +59,6 @@ public class Parser {
         return checkType(TokenType.IMPORT);
     }
     
-    private String currentClassName() {
-        return this.currentClass.getClassName();
-    }
-    
-    private void setCurrentClass(Class cl){
-        this.currentClass = cl;
-    }
-    
     private String filePath() {
         String filePath = "";
 
