@@ -9,13 +9,13 @@ import evaluator.NativeSubroutine;
 public class String {
     static ClassInfo classInfo; // 解释器一运行, classInfo就被初始化了
 
-    public static JackObject construct(java.lang.String val) {
+    public static JackObject new_(java.lang.String val) {
         JackObject newString = new JackObject(classInfo);
         newString.put("val", val);
         return newString;
     }
 
-    public static CharLiteral charAt(JackObject stringObject, Integer i) {
+    public CharLiteral charAt(JackObject stringObject, Integer i) {
         return new CharLiteral(((java.lang.String) stringObject.get("val")).charAt(i));
     }
 

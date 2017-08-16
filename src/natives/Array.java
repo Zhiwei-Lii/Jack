@@ -8,7 +8,7 @@ import evaluator.NativeSubroutine;
 public class Array {
     static ClassInfo classInfo;
 
-    public static JackObject construct (Integer integer) {
+    public static JackObject new_ (Integer integer) {
         JackObject newArray = new JackObject(classInfo);
         newArray.put("size", integer);
         return newArray;
@@ -19,7 +19,7 @@ public class Array {
 
         try {
             NativeSubroutine construct = new NativeSubroutine(true, "new",
-                    Array.class.getMethod("construct", Integer.class));
+                    Array.class.getMethod("new_", Integer.class));
             classInfo.put("new", construct);
         } catch (Exception e) {
             throw new Error("unable to append the native method");

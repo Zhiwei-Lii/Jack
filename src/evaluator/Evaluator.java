@@ -307,7 +307,7 @@ public class Evaluator {
     }
 
     public Object eval(StringLiteral stringLiteral, Environment env) {
-        JackObject stringObject = natives.String.construct(stringLiteral.getVal());
+        JackObject stringObject = natives.String.new_(stringLiteral.getVal());
         return stringObject;
     }
 
