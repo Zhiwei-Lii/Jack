@@ -93,7 +93,7 @@ subroutineName '(' expressionList ')'
 - function void printLn(JackObject object);
 
 ## Example
-基本的例子参见Example.jack
+基本的语法参见Example.jack
 
 运行解释器的方法:
 
